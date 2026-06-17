@@ -2,17 +2,18 @@
   <img src="github-banner.png" alt="RuleDoctor" width="880" />
 </p>
 
-<h3 align="center">你的 AI 编程规则，到底读没读、守没守？</h3>
+<h3 align="center">让 Agent 在真实项目里遵守规则 — Skill 改行为，CLI 证事实</h3>
 <p align="center">
-  <b>Cursor · Claude Code · Codex</b> 同一条链路：<strong>强制遵守（Hook）</strong> + <strong>事后体检（报告）</strong>
+  <b>Skill</b>（<code>~/.claude/skills/ruledoctor</code> / <code>~/.codex/skills/ruledoctor</code>）定义<strong>何时触发、触发后做什么</strong><br/>
+  <b>CLI</b>（<code>ruledoctor</code>）可选：用<strong>你本机已有</strong>的 Claude/Codex jsonl 做读到率审计
 </p>
 
 <p align="center">
-  <a href="docs/demo-showcase.html">打开网页演示（报告 + 录屏）</a>
+  <a href="docs/demo/REAL-CODEX-code4Mac.md"><strong>真实 Demo（code4Mac + 你的 Codex 会话）</strong></a>
   ·
-  <a href="docs/使用说明.md">中文使用说明</a>
+  <a href="docs/research/real-sessions-scan.md">本机会话扫描</a>
   ·
-  <a href="https://github.com/syf2211/ruledoctor">GitHub</a>
+  <a href="skills/ruledoctor/SKILL.md">Skill 正文</a>
 </p>
 
 <p align="center">
@@ -25,13 +26,58 @@
 
 ## 一句话
 
-你在 `CLAUDE.md` 里写的规矩，模型**可能根本没进上下文**、**compaction 后被挤掉**、或**看见了仍违反**。RuleDoctor 用会话日志算 **读到率**，用配置检查算 **遵守率**，并用 Hook **在 compaction 后重新注入规则、在跑命令前拦住违禁操作**。
+**Skill** 让 Claude/Codex 在真实仓库里：先读 `.cursorrules` / `CLAUDE.md`、违禁命令当场拒绝、compaction 后重读规则。  
+**CLI** 用你电脑上已有的会话日志回答：「那场对话里，规则文本到底有没有出现？」——例如本机 **code4Mac** 真实 Codex 会话里，要求先读的 `ai-operating-context` README **读到率 0%**（见下）。
 
 ---
 
-## 真实效果对比（装之前 vs 装之后）
+## 真实 Demo（不是 examples/demo-project）
 
-### 对比 1：人的直觉 vs 体检结果
+本机已扫描：**21 场 Claude 在 Downloads（无规则文件）**、**13 场 Codex 在 code4Mac（有 `.cursorrules`）**。见 [`docs/research/real-sessions-scan.md`](docs/research/real-sessions-scan.md)。
+
+### 你的 code4Mac + 真实 Codex rollout
+
+```bash
+npm run build
+node dist/index.js --cwd /Users/syf/Desktop/code4Mac \
+  --session "$HOME/.codex/sessions/2026/06/15/rollout-2026-06-15T21-32-03-019ecb7b-692b-7750-9810-5f8cc5daa06d.jsonl" \
+  --rules /Users/syf/Desktop/code4Mac/.cursorrules
+```
+
+| 直觉 | 这场真实会话的审计 |
+|------|-------------------|
+| 「别名规则应该都记住了」 | macmini / NetBird 等条目 **读到 ~100%** |
+| 「该看的文档也看了吧」 | 要求先读的 `README.md` / `three-machine-ssh-access.md` **读到 0%** |
+
+**Skill 应改的行为**：开场 **Read** 那两份文件；而不是只给你看「90/100」。完整说明：[`docs/demo/REAL-CODEX-code4Mac.md`](docs/demo/REAL-CODEX-code4Mac.md)
+
+### 安装 Skill（本机）
+
+```bash
+cp -R skills/ruledoctor ~/.claude/skills/
+cp -R skills/ruledoctor ~/.codex/skills/
+```
+
+然后在 **code4Mac** 开新 Codex/Claude 会话，观察 Agent 是否按 [`skills/ruledoctor/SKILL.md`](skills/ruledoctor/SKILL.md) **§2** 执行（先报硬约束、拒绝 force push、compaction 后重读）。
+
+---
+
+## 合成演示（仅用于 CI / 固定分数）
+
+`examples/demo-project` 是**故意编造**的 37/100 故事板，用于回归测试，**不代表你本机任何一场会话**：
+
+```bash
+node dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl
+```
+
+---
+
+## 旧版 README 片段（Hook + 假会话对比）
+
+<details>
+<summary>展开：Hook 与 demo-project 对比（次要）</summary>
+
+### 对比 1：人的直觉 vs 体检结果（demo-project 合成数据）
 
 | 你聊完一场 Agent 会话后的直觉 | RuleDoctor 同一场会话的报告 |
 |------------------------------|----------------------------|
@@ -104,23 +150,46 @@ Hook 拦截示例（`scripts/rule-guard.mjs`，stdin 模拟一次 Bash）：
 | 进过上下文后被挤掉 | 长会话 + compaction（靠 **reinject** 缓解） | 后续会话读到率掉下去 |
 | 读到了仍违反 | **R6 force push** | 读到 100% + 遵守 ✗ |
 
-静态 rules linter 只检查「规则写得好不好」；RuleDoctor 检查 **这一场会话里** 规则有没有出现、有没有踩线。
+静态 rules linter 只检查「规则写得好不好」；CLI 检查 **这一场会话里** 规则有没有出现在 transcript 里。
+
+</details>
 
 ---
 
-## 安装（按顺序做，才算「真有用」）
+## 安装
+
+### Skill（产品核心 — 只含 SKILL.md + REFERENCE.md）
+
+```bash
+cp -R skills/ruledoctor ~/.claude/skills/
+cp -R skills/ruledoctor ~/.codex/skills/
+```
+
+CC Switch：`syf2211/ruledoctor`，子目录 `skills`，安装 **ruledoctor**。
+
+### 可选：Hook + CLI（仓库 `scripts/`，不是 Skill 包的一部分）
+
+```bash
+npm i -g ruledoctor   # 或在本仓库 npm run build
+ruledoctor bootstrap-skill   # 用户级 Hook → scripts/bootstrap.mjs
+ruledoctor setup -p /path/to/project
+```
+
+---
+
+## 安装（旧：Hook 顺序）
 
 ### 1. 技能（CC Switch / 手动）
 
-仓库子目录 **`skills/ruledoctor/`**（含 `scripts/` + `rules-anchor.md`）。
+仓库子目录 **`skills/ruledoctor/`**（仅 `SKILL.md` + `REFERENCE.md`）。
 
 CC Switch：添加 `syf2211/ruledoctor`，**Subdirectory = `skills`**，安装 **ruledoctor**。
 
-### 2. 用户级 Hook（一次）
+### 2. 用户级 Hook（可选）
 
 ```bash
-node ~/.claude/skills/ruledoctor/scripts/bootstrap.mjs
-# 或：npm i -g ruledoctor && ruledoctor bootstrap-skill
+ruledoctor bootstrap-skill
+# 或：node /path/to/ruledoctor/scripts/bootstrap.mjs
 ```
 
 ### 3. 项目级（每个仓库一次）

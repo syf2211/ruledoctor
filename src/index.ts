@@ -297,9 +297,9 @@ function inventoryCmd(opts: { cwd: string; rules: string; config?: string; forma
 }
 
 function bootstrapSkillCmd() {
-  const bootstrap = join(PKG_ROOT, "skills", "ruledoctor", "scripts", "bootstrap.mjs");
+  const bootstrap = join(PKG_ROOT, "scripts", "bootstrap.mjs");
   if (!existsSync(bootstrap)) {
-    console.error(`\n  ✗ 未找到 ${bootstrap}。在源码仓请先运行: npm run sync:skill\n`);
+    console.error(`\n  ✗ 未找到 ${bootstrap}\n`);
     process.exit(2);
   }
   const r = spawnSync(process.execPath, [bootstrap], { stdio: "inherit" });
