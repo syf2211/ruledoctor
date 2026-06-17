@@ -2,216 +2,204 @@
   <img src="github-banner.png" alt="RuleDoctor" width="880" />
 </p>
 
-<h3 align="center">Coverage for your AI coding rules.</h3>
+<h3 align="center">你的 AI 编程规则，到底读没读、守没守？</h3>
 <p align="center">
-  <b>测你的 <code>.cursorrules</code> / <code>CLAUDE.md</code> / <code>AGENTS.md</code> 到底有没有被模型读到、有没有被遵守。</b><br/>
-  <sub>The read-rate & compliance coverage tool for AI coding agents. 你写的规则，AI 真的遵守了吗？</sub>
+  <b>Cursor · Claude Code · Codex</b> 同一条链路：<strong>强制遵守（Hook）</strong> + <strong>事后体检（报告）</strong>
+</p>
+
+<p align="center">
+  <a href="docs/demo-showcase.html">打开网页演示（报告 + 录屏）</a>
+  ·
+  <a href="docs/使用说明.md">中文使用说明</a>
+  ·
+  <a href="https://github.com/syf2211/ruledoctor">GitHub</a>
 </p>
 
 <p align="center">
   <img alt="Node" src="https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js&logoColor=white" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-5E5CE6" />
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" />
-  <img alt="Tests" src="https://img.shields.io/badge/tests-20%20pass-30D158" />
+  <img alt="Tests" src="https://img.shields.io/badge/tests-24%20pass-30D158" />
 </p>
 
 ---
 
-## 10 秒读懂（中文）
+## 一句话
 
-| 今天 v0.1 是什么 | 今天不是什么 |
-|------------------|--------------|
-| Claude Code **事后**规则体检：会话 jsonl + 项目规则文件 | 实时盯屏、自动改 Agent 行为 |
-| 分清「**没读到**」vs「**没遵守**」（可配置 checker） | 统一管理 Skills / Scale / 全局 rules |
-| `ruledoctor inventory` 看**到底在检查哪些规则** | LLM 当法官打分 |
-
-**完整产品定义（范围、检测原理、误判、路线图）：** [docs/产品定义-现状与路线图.md](docs/产品定义-现状与路线图.md)
+你在 `CLAUDE.md` 里写的规矩，模型**可能根本没进上下文**、**compaction 后被挤掉**、或**看见了仍违反**。RuleDoctor 用会话日志算 **读到率**，用配置检查算 **遵守率**，并用 Hook **在 compaction 后重新注入规则、在跑命令前拦住违禁操作**。
 
 ---
 
-## The problem
+## 真实效果对比（装之前 vs 装之后）
 
-You wrote rules in `.cursorrules` / `CLAUDE.md` / `AGENTS.md`. The model **doesn't follow them**. And it never tells you why — it just silently produces code that violates them, and you're left assuming the AI "got dumber."
+### 对比 1：人的直觉 vs 体检结果
 
-There are **three ways a rule dies**, and today no tool can tell you which one happened:
+| 你聊完一场 Agent 会话后的直觉 | RuleDoctor 同一场会话的报告 |
+|------------------------------|----------------------------|
+| 「它应该看过 CLAUDE.md 吧」 | **R4 读到 25%** → 这条规则大概率**没进上下文**（不是「故意不听话」） |
+| 「规则都说了禁止 force push」 | **R6 读到 100% 但遵守 ✗** → **读到了仍执行了** `git push --force`（最要命的一类） |
+| 「整体还行，打个 80 分」 | 演示会话固定 **37/100 不及格**，并列出 4 条违规 + 未进上下文的规则 |
 
-| | What happens | Anyone notice? |
-|---|---|---|
-| 🔴 **Never loaded** | Wrong file path, tool version changed, glob didn't match — the model never saw the rule | **No** |
-| 🟡 **Loaded, then dropped** | Conversation got long, compaction fired, the rule was pushed past the model's attention | **No** |
-| 🔴 **Saw it, ignored it** | The model weighed "tidy code" higher than "use integer cents" and broke the rule on purpose | **No** |
-
-## Why this is different
-
-There are already ~7 "agent rules linters" ([context-drift](https://github.com/geekiyer/context-drift), [schliff](https://github.com/Zandereins/schliff), [agentlint](https://github.com/danmartuszewski/agentlint), …). **They are all static** — they check whether your rules *file* is well-formed.
-
-That's like **checking that the traffic laws are clearly printed, without ever watching whether anyone runs a red light.**
-
-RuleDoctor answers the question no static linter can:
-
-> _"For this rule, in this session — did the model actually read it, and did it actually obey it?"_
-
-It does this from **ground truth**: the agent's own session logs and your actual code. No model calls, no guessing.
-
-## How it works
-
-```
-                  ┌─────────────────┐
- rules file ────▶ │   parse rules   │
- ───────────────▶ │   (.cursorrules │── R1…Rn ─┐
-                  │   CLAUDE.md …)  │          │
-                  └─────────────────┘          │
-                                               ▼
-session logs ──▶ ┌─────────────────┐    ┌──────────────┐
-(~/.claude/     │   READ-RATE     │    │   REPORT     │
- projects/*.jsonl)│ token presence │──▶ │  🟢🟡🔴 +    │
-                 │  in transcript  │    │  score / CI  │
-                 └─────────────────┘    └──────────────┘
-working tree ──▶ ┌─────────────────┐          ▲
-                 │  COMPLIANCE     │──────────┘
-                 │ deterministic   │
-                 │   checkers      │
-                 └─────────────────┘
-```
-
-- **Read-rate (读到率)** — scans the agent's session transcript and measures how much of each rule's distinctive vocabulary actually appears in what was sent to the model. A rule at 0% almost certainly never reached the context for that session.
-- **Compliance (遵守率)** — runs deterministic checkers (`forbid-regex`, `require-regex`, `forbid-command`) over your working tree and session to verify the rule was actually obeyed.
-
-## Quick start
+下面这段输出是仓库里 **`examples/demo-project`** 的假会话跑出来的，**你 clone 后一条命令就能复现**（不是 PPT 数字）：
 
 ```bash
-git clone https://github.com/syf2211/ruledoctor.git
-cd ruledoctor
-npm install
-npm run build
-
-# Run on the bundled demo (reproduces a 37/100 report — see below)
-./dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl
+npm install && npm run build
+node dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl
 ```
-
-Output:
 
 ```
   RuleDoctor · 规则体检
   37/100  不及格 ⚠    读到率 63%  ·  遵守率 20%  ·  检查 5/8
   ────────────────────────────────────────────────────────────────
-  ● R1  金额必须用整数「分」，禁止用浮点。            读到 100%   ✗
-  ● R2  错误必须用中文 ErrorXxx 抛出。              读到 100%   ✓
-  ● R3  提交前必须运行 npm run lint。             读到 100%   —
-  ● R4  严禁使用 any 类型。                     读到  25%   ✗
-  ● R5  日期格式统一 YYYY-MM-DD，禁止斜杠。          读到  11%   ✗
-  ● R6  仓库禁止执行 git push --force。          读到 100%   ✗
-  ● R7  API 响应必须做异常兜底，不允许裸 throw。      读到   8%   —
-  ● R8  注释一律使用中文。                      读到 100%   —
+  ● R6  仓库禁止执行 git push --force。                     读到 100%   ✗
+  ● R4  严禁使用 any 类型。                                 读到  25%   ✗
+  ...
+  违规详情:
+    ✗ R6  会话中出现了被禁止的 force push
 ```
 
-R4 / R5 were **never loaded into context** (0–25%). R6 **was read, but the model ran `git push --force` anyway** — the most damning kind of failure, and one you'd never catch without this.
+演示会话里实际发生了什么（`examples/demo-project/session.jsonl`）：
 
-### Try it on your own project
+1. 系统里注入了 5 条规则（含禁止 force push）。
+2. 助手说「帮你推到远端」，会话里出现 **`git push --force`**。
+3. 助手回复「完成！」——**人看聊天很容易觉得没问题**；RuleDoctor 标 **R6 读到但违反**。
+
+HTML 报告样例：[`docs/demo-report.html`](docs/demo-report.html) · 总览页：[`docs/demo-showcase.html`](docs/demo-showcase.html)
+
+---
+
+### 对比 2：只写规则文件 vs 装上 Skill + Hook（强制遵守）
+
+| 场景 | 只有 `CLAUDE.md` | + `bootstrap` + `setup`（见下） |
+|------|------------------|--------------------------------|
+| 聊很久 / **context compaction** | 规则可能被摘要挤掉，模型「忘了」 | **PreCompact / SessionStart** 自动把规则再写进上下文 |
+| 模型要跑 `git push --force` | 可能直接执行 | **PreToolUse / beforeShellExecution** 返回 **deny**（默认就拦 force push） |
+| 会话结束 | 你自己猜有没有违规 | 自动写 **`.ruledoctor/last-report.html`**（macOS 可自动打开） |
+
+Hook 拦截示例（`scripts/rule-guard.mjs`，stdin 模拟一次 Bash）：
+
+```json
+{"permission":"deny","user_message":"RuleDoctor: 禁止执行 git push --force","agent_message":"RuleDoctor: 禁止执行 git push --force"}
+```
+
+**没有跑 bootstrap，只有 SKILL 文字 → 不会 magically 拦命令**；CC Switch 只拷贝文件夹，**必须执行一次 bootstrap**（下面「安装」）。
+
+---
+
+### 对比 3：两种「规则文件」扫同一条真实会话
+
+同一条 Claude 日志，换不同规则 md，分数完全不同（说明工具在看**你声明的规则**，不是瞎编）：
+
+| 规则来源 | 典型结果 | 含义 |
+|----------|----------|------|
+| 机器上的 `.cursorrules`（别名、工具偏好） | 与调研任务无关，分数不能当「调研守规」依据 | 规则文件要和任务一致 |
+| `docs/examples/pain-points-research-rules.md`（调研约束 5 条） | 按该文件算读到率；无 checker 时**不会**假装遵守率 100% | 见 [`docs/examples/实战-你的Claude会话-pain-points.md`](docs/examples/实战-你的Claude会话-pain-points.md) |
+
+---
+
+## 三种死法（demo 里各占一种）
+
+| 类型 | demo 里的例子 | 报告里长什么样 |
+|------|---------------|----------------|
+| 从没进上下文 | R4 / R5 读到很低 | 「未进入上下文的规则」 |
+| 进过上下文后被挤掉 | 长会话 + compaction（靠 **reinject** 缓解） | 后续会话读到率掉下去 |
+| 读到了仍违反 | **R6 force push** | 读到 100% + 遵守 ✗ |
+
+静态 rules linter 只检查「规则写得好不好」；RuleDoctor 检查 **这一场会话里** 规则有没有出现、有没有踩线。
+
+---
+
+## 安装（按顺序做，才算「真有用」）
+
+### 1. 技能（CC Switch / 手动）
+
+仓库子目录 **`skills/ruledoctor/`**（含 `scripts/` + `rules-anchor.md`）。
+
+CC Switch：添加 `syf2211/ruledoctor`，**Subdirectory = `skills`**，安装 **ruledoctor**。
+
+### 2. 用户级 Hook（一次）
 
 ```bash
-# auto-detects CLAUDE.md / AGENTS.md / .cursorrules in the cwd,
-# and auto-detects the matching ~/.claude/projects/<cwd>/*.jsonl session logs
-ruledoctor
+node ~/.claude/skills/ruledoctor/scripts/bootstrap.mjs
+# 或：npm i -g ruledoctor && ruledoctor bootstrap-skill
 ```
 
-## Defining compliance checks
+### 3. 项目级（每个仓库一次）
 
-Rules on their own are prose. Add a `.ruledoctor.json` to attach deterministic checkers — each linked to a rule by a substring:
-
-```jsonc
-{
-  "checks": [
-    {
-      "rule": "整数「分」",          // links to the rule by substring
-      "type": "forbid-regex",        // pattern must NOT appear in matched files
-      "pattern": "\\d+\\.\\d+",
-      "paths": ["src/**"],
-      "message": "found a float amount — rules require integer cents"
-    },
-    {
-      "rule": "git push --force",
-      "type": "forbid-command",      // a command substring must NOT have been run
-      "command": "push --force"
-    },
-    {
-      "rule": "ErrorXxx",
-      "type": "require-regex",       // pattern MUST appear somewhere
-      "pattern": "ErrorXxx",
-      "paths": ["src/**"]
-    }
-  ]
-}
+```bash
+cd your-project
+ruledoctor setup -p .
+# 或开发本仓库：npm run setup:here
 ```
 
-Scaffold one with `ruledoctor init`. Rules without a checker report `—` (unknown), honestly — never a fake pass.
+### 4. 平时 / 会话结束
 
-## CI gate
-
-Block a PR when rule health drops below a bar:
-
-```yaml
-# .github/workflows/rules.yml
-- run: npx ruledoctor --min-score 70 --format json --out report.json
-- uses: actions/upload-artifact@v4
-  with: { name: rule-report, path: report.json }
+```bash
+ruledoctor --cwd . --last-session    # 自动找 Claude / Codex / Cursor 最近会话
+ruledoctor doctor -p .               # 看能找到哪些会话文件
 ```
 
-`--min-score` exits non-zero below the threshold. Use `--format html --out report.html` to get a shareable dashboard:
+更多分发方式：[`docs/CC-Switch-技能分发.md`](docs/CC-Switch-技能分发.md)
 
-<p align="center">
-  <img src="docs/report-sample.png" alt="RuleDoctor HTML report" width="520" />
-</p>
+---
 
-## CLI reference
+## 自己项目试跑
+
+```bash
+ruledoctor --cwd /path/to/project --last-session
+```
+
+自动发现 `CLAUDE.md` / `AGENTS.md` / `.cursorrules` 和本地会话 jsonl。
+
+遵守检查在 **`.ruledoctor.json`**（`ruledoctor init` 生成模板）。没配置 checker 时，总分**只算读到率**，不会显示假的「遵守 100%」。
+
+---
+
+## CLI 常用参数
 
 ```
 ruledoctor [options]
-  --rules <paths>     comma-separated rules file(s)
-  --session <path>    session log file / dir / glob (default: auto-detect ~/.claude/projects)
-  --cwd <dir>         project root
-  --config <path>     .ruledoctor.json path (default: auto-detect)
-  --format <fmt>      terminal | json | html            (default: terminal)
-  --out <file>        write the report to a file
-  --min-score <n>     CI gate: exit 1 if score below N
-  --no-read-rate      skip session-log read-rate analysis
+  --cwd <dir>           项目根
+  --last-session        最近一次会话（Claude / Codex / Cursor）
+  --session <path>      指定 jsonl
+  --format terminal|json|html
+  --out <file>          写出报告
+  --min-score <n>       CI：低于 n 分 exit 1
 
-ruledoctor init       create a .ruledoctor.json template
+ruledoctor setup -p .       规则模板 + 项目/用户 Hook
+ruledoctor bootstrap-skill  用户级 Hook（同 bootstrap.mjs）
+ruledoctor doctor -p .      会话发现
+ruledoctor init             生成 .ruledoctor.json
 ```
 
-## Scoring
+---
+
+## 架构（给开发者）
 
 ```
-score = round( readRate% × 0.4 + compliance% × 0.6 )
+规则文件 ──► 解析 ──► R1…Rn ──┐
+                              ├──► 报告（分数 + 逐条灯色）
+会话 jsonl ──► 读到率 ─────────┘
+工作区 + jsonl ──► 遵守检查（regex / forbid-command）
+Hook ──► compaction 再注入 / 命令 deny / 结束出 HTML
 ```
 
-- **readRate%** = rules present in the session transcript ÷ total rules
-- **compliance%** = checked rules that pass ÷ checked rules (rules without a checker are excluded, so adding checks can only make the number more honest)
+---
 
-## Honest limitations
+## 局限（实话）
 
-RuleDoctor is deliberately transparent about what it can and can't measure:
+- **读到率** = 规则关键词是否在 transcript 里出现，不是读心。
+- **遵守率** 只对 `.ruledoctor.json` 里配置了的项成立。
+- **Skill 不会自动装 Hook**；必须 `bootstrap` + 项目 `setup`。
+- 更全边界：[`docs/产品定义-现状与路线图.md`](docs/产品定义-现状与路线图.md)
 
-- **Read-rate = context presence**, measured from session logs. It proves a rule's text *reached* the context — strong evidence, not a mind-read. (A true "did the model *understand* it" probe would need an API call; that's on the roadmap as an opt-in `--probe` mode.)
-- **Session-log support** currently targets **Claude Code** (`~/.claude/projects/**/*.jsonl`). Cline / Cursor / Gemini CLI logs use different formats — adapter contributions welcome.
-- **Compliance** is only as good as your checkers. Free-text rules without a checker honestly report `unknown`.
+---
 
-## Roadmap
+## English (short)
 
-- [ ] `--probe` mode: inject probe questions to measure true *comprehension* (read-rate today only proves presence)
-- [ ] Adapters: Cline, Cursor, Gemini CLI, OpenCode session logs
-- [ ] `must-run` checker (e.g. "lint must have run before commit")
-- [ ] Trend tracking across sessions
-- [ ] Suggested checkers auto-generated from rule text
+RuleDoctor measures **read-rate** (rule text in session logs) and **compliance** (configured checkers), and ships **hooks** to **re-inject rules after compaction** and **block forbidden shell commands**. Run the demo: `node dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl` → **37/100** with **R6: read but violated force push**. Install: skill → `bootstrap.mjs` → `ruledoctor setup -p .`.
 
-## Contributing
-
-PRs welcome — especially session-log adapters and checker types. See `src/` for the architecture (parser → read-rate → compliance → report). Run `npm test` (20 tests) before submitting.
-
-## Credits
-
-Born out of research into recurring, unsolved pain points across AI coding tools — see [`docs/`](docs/) for the campaign assets and the write-up. The "rule was read but ignored" failure mode is documented across [anthropics/claude-code](https://github.com/anthropics/claude-code) issues and r/ClaudeCode.
+---
 
 ## License
 
-MIT
+MIT · [syf2211/ruledoctor](https://github.com/syf2211/ruledoctor)
