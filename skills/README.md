@@ -1,22 +1,9 @@
 # Skills in this repository
 
+**Install one folder:** [`ruledoctor/`](./ruledoctor/) → copy to `~/.claude/skills/` (see [ruledoctor/README.md](./ruledoctor/README.md)).
+
 | Skill | Description |
 |-------|-------------|
-| [ruledoctor](./ruledoctor/) | Keep agents aligned with project rules (`CLAUDE.md`, `.cursorrules`, `required_reads`) |
+| [ruledoctor](./ruledoctor/) | Read project rules + `required_reads` before coding; soft refuse on violations |
 
-## Install
-
-```bash
-npx skills add syf2211/ruledoctor --skill ruledoctor -g -y
-```
-
-Or copy manually:
-
-```bash
-cp -R skills/ruledoctor ~/.claude/skills/
-cp -R skills/ruledoctor ~/.codex/skills/
-```
-
-After install, **start a new chat** in a project that has rule files.
-
-CLI (optional audit): see repository [README](../README.md) — install from GitHub until npm publish.
+The repo root also ships optional CLI/Hooks (`src/`, `scripts/`) — not required for the Skill.

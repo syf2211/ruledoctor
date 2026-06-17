@@ -15,9 +15,9 @@ description: >-
 |----|------|
 | **本 Skill** | 提醒你先读规则、拒绝违禁操作、压缩后重读（**软约束**） |
 | **CLI `ruledoctor`** | 用户要求时，用本地会话日志做**事后核对** |
-| **Hook（`ruledoctor setup`）** | 在 shell 层**硬拦截**部分命令（如 force push） |
+| **Hook（`ruledoctor setup`）** | 在 **Bash 执行前**硬拦截部分命令；SessionStart/压缩后注入规则摘要；结束可出报告（见下） |
 
-读规则 ≠ 一定遵守；危险操作要靠 Hook 才能硬挡。
+读规则 ≠ 一定遵守。**「必须用中文、要汇报、要写验证」** 靠本 Skill + 项目规则（软约束）；**只有能写成 shell 子串的危险命令** 才适合 Hook 硬拦。人话说明：[Hook 是什么？](https://github.com/syf2211/ruledoctor/blob/main/docs/Hook是什么.md)
 
 ---
 
