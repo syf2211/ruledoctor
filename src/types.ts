@@ -62,6 +62,11 @@ export interface Check {
 /** Sidecar config (.ruledoctor.json). */
 export interface Config {
   checks: Check[];
+  /**
+   * Project-relative paths the agent must Read (explicit list — no whole-repo scan).
+   * Example: ["docs/agent_workflow_protocol.md", "CONTRIBUTING.md"]
+   */
+  required_reads?: string[];
 }
 
 export type Status = "pass" | "fail" | "unknown";

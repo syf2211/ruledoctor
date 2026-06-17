@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
-import { basename } from "node:path";
+import { basename, resolve } from "node:path";
+import fg from "fast-glob";
 import type { Rule } from "./types.js";
 
 /** A parsed rule before it has been assigned a stable id. */
@@ -103,25 +104,53 @@ function assignIds(rules: RuleSeed[]): Rule[] {
   return out;
 }
 
-/**
- * Auto-discover rules files in a directory, in priority order.
- * Returns absolute paths that exist.
- */
-export function discoverRuleFiles(dir: string, exists: (p: string) => boolean): string[] {
-  const candidates = [
-    "CLAUDE.md",
-    "AGENTS.md",
-    ".cursorrules",
-    "GEMINI.md",
-    ".windsurfrules",
-    "copilot-instructions.md",
-  ];
-  const found: string[] = [];
-  for (const c of candidates) {
-    const p = `${dir}/${c}`;
-    if (exists(p)) found.push(p);
+/** Root-level rule files (common conventions). README is omitted unless listed in required_reads. */
+export const ROOT_RULE_CANDIDATES = [
+  "CLAUDE.md",
+  "AGENTS.md",
+  ".cursorrules",
+  "CONTRIBUTING.md",
+  "GEMINI.md",
+  ".windsurfrules",
+  "copilot-instructions.md",
+  ".github/copilot-instructions.md",
+] as const;
+
+export function resolveRequiredReadPaths(cwd: string, relPaths: string[], exists: (p: string) => boolean): string[] {
+  const out: string[] = [];
+  for (const rel of relPaths) {
+    const trimmed = rel.trim();
+    if (!trimmed) continue;
+    const p = resolve(cwd, trimmed);
+    if (exists(p)) out.push(p);
   }
-  return found;
+  return out;
+}
+
+/**
+ * Discover rules files: standard root names + `.cursor/rules/*` + explicit required_reads only.
+ */
+export function discoverRuleFiles(
+  dir: string,
+  exists: (p: string) => boolean,
+  opts?: { requiredReads?: string[] },
+): string[] {
+  const cwd = resolve(dir);
+  const found = new Set<string>();
+
+  for (const c of ROOT_RULE_CANDIDATES) {
+    const p = resolve(cwd, c);
+    if (exists(p)) found.add(p);
+  }
+
+  const cursorRules = fg.sync(`${cwd}/.cursor/rules/*.{md,mdc}`, { onlyFiles: true, absolute: true });
+  for (const p of cursorRules) found.add(p);
+
+  if (opts?.requiredReads?.length) {
+    for (const p of resolveRequiredReadPaths(cwd, opts.requiredReads, exists)) found.add(p);
+  }
+
+  return [...found].sort();
 }
 
 /** Short label for a rules file path, for display. */

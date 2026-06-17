@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync, existsSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { parseRulesFile, parseRulesText, discoverRuleFiles } from "../src/rules.js";
@@ -37,9 +37,24 @@ test("discovers standard rule files that exist", () => {
   try {
     writeFileSync(join(d, "CLAUDE.md"), "- a\n");
     writeFileSync(join(d, ".cursorrules"), "- b\n");
-    const files = discoverRuleFiles(d, (p) => ["CLAUDE.md", ".cursorrules"].some((n) => p.endsWith(n)));
+    writeFileSync(join(d, "CONTRIBUTING.md"), "- c\n");
+    const files = discoverRuleFiles(d, existsSync);
     assert.ok(files.some((f) => f.endsWith("CLAUDE.md")));
-    assert.ok(files.some((f) => f.endsWith(".cursorrules")));
+    assert.ok(files.some((f) => f.endsWith("CONTRIBUTING.md")));
+  } finally {
+    rmSync(d, { recursive: true, force: true });
+  }
+});
+
+test("required_reads adds explicit paths only", () => {
+  const d = mkdtempSync(join(tmpdir(), "rd-"));
+  try {
+    writeFileSync(join(d, "CLAUDE.md"), "- a\n");
+    mkdirSync(join(d, "docs"), { recursive: true });
+    writeFileSync(join(d, "docs", "proto.md"), "- deep\n");
+    const files = discoverRuleFiles(d, existsSync, { requiredReads: ["docs/proto.md", "missing.md"] });
+    assert.ok(files.some((f) => f.endsWith("docs/proto.md")));
+    assert.ok(!files.some((f) => f.endsWith("missing.md")));
   } finally {
     rmSync(d, { recursive: true, force: true });
   }

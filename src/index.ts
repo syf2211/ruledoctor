@@ -103,11 +103,12 @@ interface CheckOpts {
 
 async function runCheck(opts: CheckOpts) {
   const cwd = resolve(opts.cwd);
+  const { config, source: configSource } = loadConfig(opts.config, cwd);
 
   // 1) rules
   const ruleFiles = opts.rules
     ? opts.rules.split(",").map((s) => s.trim()).filter(Boolean).map((p) => resolve(p))
-    : discoverRuleFiles(cwd, (p) => existsSync(p));
+    : discoverRuleFiles(cwd, (p) => existsSync(p), { requiredReads: config.required_reads });
   if (ruleFiles.length === 0) {
     throw new Error(
       `No rules file found in ${cwd}. Pass --rules <file> or add a CLAUDE.md / AGENTS.md / .cursorrules.`,
@@ -153,9 +154,14 @@ async function runCheck(opts: CheckOpts) {
     : rules.map((r) => ({ ruleId: r.id, confidence: 0, present: false, matched: 0, total: 0 }));
 
   // 3) compliance (deterministic checkers)
-  const { config, source } = loadConfig(opts.config, cwd);
   const { results: compliance, orphans } = await runChecks(rules, config.checks, cwd, corpusText);
-  notes.push(`rules: ${ruleFiles.length} file(s)${source ? ` · checks: ${config.checks.length} from ${source}` : " · no .ruledoctor.json (compliance all unknown)"}`);
+  const reqNote =
+    config.required_reads && config.required_reads.length
+      ? ` · required_reads: ${config.required_reads.length} path(s)`
+      : "";
+  notes.push(
+    `rules: ${ruleFiles.length} file(s)${configSource ? ` · checks: ${config.checks.length} from ${fileLabel(configSource)}` : " · no .ruledoctor.json (compliance all unknown)"}${reqNote}`,
+  );
   if (orphans.length) notes.push(`⚠ ${orphans.length} check(s) matched no rule: ${orphans.map((o) => `"${o.rule}"`).join(", ")}`);
 
   // 4) report
@@ -190,11 +196,10 @@ async function runCheck(opts: CheckOpts) {
 }
 
 const TEMPLATE = `{
-  // RuleDoctor checks — link each check to a rule by a distinctive substring.
-  // Types:
-  //   forbid-regex   pattern must NOT appear in the matched files
-  //   require-regex  pattern MUST appear somewhere
-  //   forbid-command a shell command substring must NOT have been run in the session
+  // Paths the agent must Read (relative to project root). Not a whole-repo scan.
+  "required_reads": [
+    "CONTRIBUTING.md"
+  ],
   "checks": [
     {
       "rule": "整数「分」",
@@ -224,21 +229,20 @@ function initCmd(cwd: string) {
 }
 
 const NOT_SCANNED = [
-  ".cursor/rules/*.mdc",
-  ".claude/rules/",
-  "Claude Skills / Scale 工作流步骤（除非写入 CLAUDE.md 等）",
+  "未列入 required_reads 的深层文档（请写入 .ruledoctor.json）",
+  "Claude Skills / Scale 工作流（除非写入规则文件）",
   "~/.claude/settings.json、hooks 配置",
-  "用户全局 Cursor / Claude 账号级 rules",
-  "厂商 system prompt（仅当原文出现在会话 jsonl 时可能参与读到率匹配）",
+  "用户全局账号级 rules",
+  "厂商 system prompt（仅当原文出现在会话 jsonl 时可能参与读到率）",
 ];
 
 function inventoryCmd(opts: { cwd: string; rules: string; config?: string; format: string }) {
   const cwd = resolve(opts.cwd);
+  const { config, source: configSource } = loadConfig(opts.config, cwd);
   const ruleFiles = opts.rules
     ? opts.rules.split(",").map((s) => s.trim()).filter(Boolean).map((p) => resolve(p))
-    : discoverRuleFiles(cwd, (p) => existsSync(p));
+    : discoverRuleFiles(cwd, (p) => existsSync(p), { requiredReads: config.required_reads });
   const rules = ruleFiles.flatMap((f) => parseRulesFile(f));
-  const { config, source: configSource } = loadConfig(opts.config, cwd);
 
   const checkerForRule = (text: string): string | null => {
     for (const c of config.checks) {

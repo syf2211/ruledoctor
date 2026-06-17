@@ -17,6 +17,35 @@
   <a href="https://github.com/syf2211/ruledoctor">GitHub</a>
 </p>
 
+<p align="center">
+  <strong>安装状态：</strong> npm 上尚无 <code>ruledoctor</code> 包（<code>npm i -g ruledoctor</code> 会 404）。<br/>
+  请用下方 <strong>GitHub / skills 目录</strong> 安装 Skill；CLI 用 <code>npm i -g github:syf2211/ruledoctor</code> 或 clone 后 <code>npm link</code>。
+</p>
+
+---
+
+## 三层：Skill / CLI / Hook
+
+| 层 | 干什么 | 用户感受 |
+|----|--------|----------|
+| **Skill**（`skills/ruledoctor`） | 提醒 Agent 读规则 + `required_reads`，默认只报「读了哪些文件 + 3 条硬约束」 | 对话里先读再改、拒绝 force push |
+| **CLI**（可选） | 用本地会话 jsonl **事后**核对规则文字有没有出现 | 终端/HTML 报告 |
+| **Hook**（`ruledoctor setup`） | shell 层 **硬拦截** 部分命令 | 工具直接 deny，不依赖模型自觉 |
+
+**读规则 ≠ 一定遵守**；真要挡危险命令，请装 Hook。
+
+---
+
+## 标准 Skill 仓库结构
+
+```
+skills/
+  ruledoctor/SKILL.md    ← 安装这个文件夹
+  README.md
+AGENTS.md                  ← OpenSkills / Cursor sync 用
+scripts/                   ← CLI + 可选 Hook（不是 Skill 包内容）
+```
+
 ---
 
 ## 30 秒看懂
@@ -71,35 +100,34 @@ npx skills add syf2211/ruledoctor --skill ruledoctor -g -y
 若项目里还没有规则文件：
 
 ```bash
-cd your-project
-npx ruledoctor setup -p .    # 生成 CLAUDE.md 模板 + 可选 Hook（需先 npm i -g ruledoctor）
+git clone https://github.com/syf2211/ruledoctor.git
+cd ruledoctor && npm install && npm run build
+node dist/index.js setup -p /path/to/your-project
 ```
+
+在 `.ruledoctor.json` 里配置 **`required_reads`**（必读深层文档，不扫全库），例如 `docs/agent_workflow_protocol.md`。
+
+---
+
+## 可选：CLI 自查
+
+```bash
+npm i -g github:syf2211/ruledoctor
+# 或：cd ruledoctor && npm link
+ruledoctor --cwd your-project --last-session
+```
+
+报告含义：[docs/分数是什么意思.md](docs/分数是什么意思.md) · 测试数据：`examples/demo-project`（非真实会话）
 
 ---
 
 ## 怎么算「已经生效」？
 
-你应该**在对话里**看到类似行为（而不是只看终端分数）：
-
-- 助手第一句话附近会提到：规则来自哪个文件、本场禁止什么。
-- 你让它 `git push --force` → 它**拒绝**并说明原因。
-- 你说「上下文被压缩了」→ 它**重新打开**规则文件。
+- 助手默认只说：**读了哪些文件** + **最多 3 条硬约束**（不是长篇念经）。
+- 你让它 `git push --force` → 应**拒绝**（Skill 提醒；要硬拦请 `setup` Hook）。
+- 你说「上下文被压缩了」→ 应**重新 Read** 规则与 `required_reads`。
 
 没看到这些？看 [用户指南 · 没生效怎么办](docs/用户指南.md#没生效怎么办)。
-
----
-
-## 可选：CLI 自查（给想核对的人）
-
-```bash
-npm i -g ruledoctor
-cd your-project
-ruledoctor --cwd . --last-session
-```
-
-报告含义用人话说明：[docs/分数是什么意思.md](docs/分数是什么意思.md)
-
-仓库里还有一个**固定演示数据** `examples/demo-project`（用于测试，不代表你的电脑上的某次聊天）。
 
 ---
 

@@ -10,10 +10,16 @@ export function loadConfig(path: string | undefined, cwd: string): { config: Con
   const file = path
     ? resolve(path)
     : CONFIG_FILES.map((c) => resolve(cwd, c)).find((c) => existsSync(c));
-  if (!file) return { config: { checks: [] }, source: null };
+  if (!file) return { config: { checks: [], required_reads: [] }, source: null };
   const raw = readFileSync(file, "utf8").replace(/\/\/.*$/gm, ""); // strip JS line comments
   const parsed = JSON.parse(raw) as Partial<Config>;
-  return { config: { checks: Array.isArray(parsed.checks) ? parsed.checks : [] }, source: file };
+  return {
+    config: {
+      checks: Array.isArray(parsed.checks) ? parsed.checks : [],
+      required_reads: Array.isArray(parsed.required_reads) ? parsed.required_reads.filter((x) => typeof x === "string") : [],
+    },
+    source: file,
+  };
 }
 
 /** Default working-tree scope when a check lists no `paths`. */

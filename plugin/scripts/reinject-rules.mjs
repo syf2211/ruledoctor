@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 /**
  * Re-inject project rules after SessionStart / PreCompact (compaction).
- * Keeps hard rules in context when the model would otherwise "forget" CLAUDE.md.
  */
-import { readFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
+import { resolve, join } from "node:path";
 
-const RULE_FILES = [
+const ROOT_RULES = [
   "CLAUDE.md",
   "AGENTS.md",
   ".cursorrules",
-  ".cursor/rules/project.md",
+  "CONTRIBUTING.md",
+  ".github/copilot-instructions.md",
+  "copilot-instructions.md",
 ];
 
 const MAX_CHARS = 12_000;
@@ -23,55 +24,57 @@ function readStdin() {
   }
 }
 
-function discoverRules(cwd) {
-  const chunks = [];
-  for (const rel of RULE_FILES) {
-    const p = resolve(cwd, rel);
+function loadRequiredReads(cwd) {
+  for (const name of [".ruledoctor.json", ".ruledoctor.jsonc", "ruledoctor.config.json"]) {
+    const p = resolve(cwd, name);
     if (!existsSync(p)) continue;
     try {
-      chunks.push(`## ${rel}\n${readFileSync(p, "utf8").trim()}`);
+      const raw = readFileSync(p, "utf8").replace(/\/\/.*$/gm, "");
+      const o = JSON.parse(raw);
+      if (Array.isArray(o.required_reads)) return o.required_reads.filter((x) => typeof x === "string");
     } catch {
       /* ignore */
     }
   }
-  return chunks.join("\n\n");
+  return [];
 }
 
-function loadRulesAnchor() {
-  const candidates = [];
-  if (process.env.RULEDOCTOR_SKILL_ROOT) {
-    candidates.push(resolve(process.env.RULEDOCTOR_SKILL_ROOT, "rules-anchor.md"));
+function discoverRulePaths(cwd) {
+  const paths = new Set();
+  for (const rel of ROOT_RULES) {
+    const p = resolve(cwd, rel);
+    if (existsSync(p)) paths.add(p);
   }
-  const home = process.env.HOME;
-  if (home) {
-    candidates.push(resolve(home, ".claude/skills/ruledoctor/rules-anchor.md"));
-  }
-  for (const p of candidates) {
-    if (!existsSync(p)) continue;
-    try {
-      return readFileSync(p, "utf8").trim();
-    } catch {
-      /* ignore */
+  const cursorDir = resolve(cwd, ".cursor/rules");
+  if (existsSync(cursorDir)) {
+    for (const f of readdirSync(cursorDir)) {
+      if (f.endsWith(".md") || f.endsWith(".mdc")) paths.add(join(cursorDir, f));
     }
   }
-  return null;
+  for (const rel of loadRequiredReads(cwd)) {
+    const p = resolve(cwd, rel);
+    if (existsSync(p)) paths.add(p);
+  }
+  return [...paths];
 }
 
 function buildContext(cwd) {
-  let body = discoverRules(cwd);
-  if (!body) {
-    const anchor = loadRulesAnchor();
-    if (anchor) {
-      body = `## rules-anchor.md (RuleDoctor 默认)\n${anchor}`;
+  const files = discoverRulePaths(cwd);
+  if (files.length === 0) {
+    return "RuleDoctor: 未发现规则文件。请添加 CLAUDE.md / .cursorrules，或在 .ruledoctor.json 配置 required_reads。";
+  }
+  const chunks = [];
+  for (const p of files) {
+    try {
+      chunks.push(`## ${p.replace(cwd + "/", "")}\n${readFileSync(p, "utf8").trim().slice(0, 4000)}`);
+    } catch {
+      /* ignore */
     }
   }
-  if (!body) {
-    return "RuleDoctor: 本项目未发现 CLAUDE.md / AGENTS.md / .cursorrules。请运行 `ruledoctor setup -p .` 生成规则文件。";
-  }
   const header =
-    "【RuleDoctor · 规则锚点】上下文压缩或新会话后，以下规则仍然有效。执行任何工具或改代码前必须遵守；若与用户指令冲突，先说明再征求确认。\n\n";
-  let text = header + body;
-  if (text.length > MAX_CHARS) text = text.slice(0, MAX_CHARS) + "\n\n…(规则已截断，请 Read 完整规则文件)";
+    "【RuleDoctor · 规则锚点】压缩或新会话后仍有效。Agent：已读文件见下；对用户默认只汇报「读了哪些文件 + 最多 3 条硬约束」，除非用户要求展开。\n\n";
+  let text = header + chunks.join("\n\n");
+  if (text.length > MAX_CHARS) text = text.slice(0, MAX_CHARS) + "\n\n…(已截断，请 Read 完整文件)";
   return text;
 }
 
@@ -80,13 +83,10 @@ const cwd = input.cwd || input.project_dir || process.cwd();
 const event = input.hook_event_name || input.hookEventName || "SessionStart";
 const ctx = buildContext(cwd);
 
-const out = {
-  continue: true,
-  systemMessage: "RuleDoctor 已重新注入项目规则（抗 compaction）。",
-  hookSpecificOutput: {
-    hookEventName: event,
-    additionalContext: ctx,
-  },
-};
-
-console.log(JSON.stringify(out));
+console.log(
+  JSON.stringify({
+    continue: true,
+    systemMessage: "RuleDoctor 已注入规则锚点（含 required_reads）。",
+    hookSpecificOutput: { hookEventName: event, additionalContext: ctx },
+  }),
+);
