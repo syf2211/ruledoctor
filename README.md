@@ -68,7 +68,7 @@ working tree ──▶ ┌─────────────────┐
 ## Quick start
 
 ```bash
-git clone https://github.com/ruledoctor/ruledoctor.git
+git clone https://github.com/syf2211/ruledoctor.git
 cd ruledoctor
 npm install
 npm run build

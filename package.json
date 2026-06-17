@@ -5,10 +5,10 @@
   "type": "module",
   "license": "MIT",
   "author": "",
-  "homepage": "https://github.com/ruledoctor/ruledoctor",
+  "homepage": "https://github.com/syf2211/ruledoctor",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ruledoctor/ruledoctor.git"
+    "url": "https://github.com/syf2211/ruledoctor.git"
   },
   "keywords": [
     "claude-code",

@@ -34,7 +34,7 @@
 3. 出报告，还能 `--gate` 卡 CI
 
 ```bash
-git clone https://github.com/ruledoctor/ruledoctor.git
+git clone https://github.com/syf2211/ruledoctor.git
 cd ruledoctor && npm install && npm run build
 ./dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl
 ```
