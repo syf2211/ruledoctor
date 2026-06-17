@@ -85,7 +85,7 @@
 ## 三、当前问题与卡点
 
 1. **调研覆盖面偏差**：一手证据仍偏 Claude Code + Cline；Reddit/中文社区在当轮环境取证不完整（需 MiniMax web-search / 代理 Reddit skill 补采）。
-2. **仓库未发布**：本地 `git init` 后 **零 commit**；README 指向 `github.com/ruledoctor/ruledoctor` 但远程未必存在。
+2. **仓库**：已发布至 https://github.com/syf2211/ruledoctor（`gh` 安装在 `~/.local/bin/gh`）。
 3. **文档路径漂移**：早期交付写 `rule-doctor/01-cover.png`，实际竖版在 **`docs/`**；接手时需统一 README/发帖指引。
 4. **产品边界需对外诚实**：读率 = 规则文本是否进入 transcript（强证据），≠ 模型是否理解；遵守率依赖 `.ruledoctor.json` 配置的 checker。
 5. **环境**：当前机器无 `gh` CLI，自动建库需用户安装或网页创建。
