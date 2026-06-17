@@ -4,7 +4,7 @@
 > 转录路径：`/Users/syf/.claude/projects/-Users-syf-Downloads/f9df071c-de89-492b-9479-f3285f1567d7.jsonl`  
 > CLI Session ID：`f9df071c-de89-492b-9479-f3285f1567d7`  
 > 最后活动：2026-06-16（`/goal` 完成后 RuleDoctor MVP 收尾）  
-> 项目落地目录：`/Users/syf/Downloads/rule-doctor/`
+> 项目落地目录：`/Users/syf/Desktop/RuleDoctor工作区/rule-doctor/`
 
 ---
 
@@ -66,7 +66,7 @@
 
 ### 阶段 E：RuleDoctor MVP（2026-06-16 `/goal` 后）
 
-路径：`/Users/syf/Downloads/rule-doctor/`
+路径：`/Users/syf/Desktop/RuleDoctor工作区/rule-doctor/`
 
 | 项 | 状态 |
 |----|------|
@@ -132,7 +132,7 @@
 ## 六、关键路径速查
 
 ```bash
-cd /Users/syf/Downloads/rule-doctor
+cd "/Users/syf/Desktop/RuleDoctor工作区/rule-doctor"
 npm install && npm run build
 node dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl
 node dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl --format html --out report.html

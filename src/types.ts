@@ -87,7 +87,7 @@ export interface ReportRow {
 export interface Report {
   score: number; // 0..100
   readRatePct: number; // 0..100, share of rules present in context
-  compliancePct: number; // 0..100, share of checked rules that pass
+  compliancePct: number | null; // null when no checkers configured
   totalRules: number;
   presentRules: number;
   checkedRules: number;
@@ -95,4 +95,6 @@ export interface Report {
   rows: ReportRow[];
   /** Free-form notes surfaced to the user (e.g. session files scanned). */
   notes: string[];
+  /** False when no .ruledoctor.json checks — score is read-rate only. */
+  complianceConfigured: boolean;
 }

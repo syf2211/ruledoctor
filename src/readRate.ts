@@ -3,6 +3,7 @@ import fg from "fast-glob";
 import { homedir } from "node:os";
 import { isAbsolute, resolve } from "node:path";
 import type { ReadRateResult, Rule } from "./types.js";
+import { findLatestSessionForProject } from "./sessionSources.js";
 
 /**
  * READ-RATE — was a rule's content actually present in the messages sent to the
@@ -87,40 +88,64 @@ export function buildCorpus(sessionFiles: string[]): { text: string; lines: numb
   return { text: text.toLowerCase(), lines };
 }
 
-/** Pull every human/model-readable string out of one JSONL record. */
+/** Pull every human/model-readable string out of one JSONL record (Claude / Codex / Cursor). */
 function extractText(line: string): string {
   let obj: unknown;
   try {
     obj = JSON.parse(line);
   } catch {
-    return line; // not JSON — keep raw
+    return line;
   }
   if (typeof obj !== "object" || obj === null) return String(obj);
 
   const parts: string[] = [];
   const o = obj as Record<string, unknown>;
-  const msg = o.message as Record<string, unknown> | undefined;
-  const content = msg?.content;
-  if (typeof content === "string") {
-    parts.push(content);
-  } else if (Array.isArray(content)) {
-    for (const item of content) {
-      if (typeof item === "string") parts.push(item);
-      else if (item && typeof item === "object") {
-        const it = item as Record<string, unknown>;
-        if (typeof it.text === "string") parts.push(it.text);
-        if (typeof it.content === "string") parts.push(it.content);
-        if (typeof it.name === "string") parts.push(it.name);
-      }
-    }
+
+  // --- Codex rollout format ---
+  if (o.type === "response_item" && o.payload && typeof o.payload === "object") {
+    const p = o.payload as Record<string, unknown>;
+    collectMessageContent(p, parts);
   }
+  if (o.type === "event_msg" && o.payload) {
+    parts.push(safeStringify(o.payload));
+  }
+
+  // --- Cursor agent transcript (top-level role) ---
+  if (o.role && o.message) {
+    collectMessageContent(o.message as Record<string, unknown>, parts);
+  }
+
+  // --- Claude Code format ---
+  const msg = o.message as Record<string, unknown> | undefined;
+  if (msg) collectMessageContent(msg, parts);
+
   if (typeof o.toolUseResult === "string") parts.push(o.toolUseResult);
   else if (o.toolUseResult) parts.push(safeStringify(o.toolUseResult));
   if (typeof o.summary === "string") parts.push(o.summary);
 
-  // last resort: the whole record carries the ground truth anyway
   if (parts.length === 0) parts.push(safeStringify(o));
   return parts.join(" ");
+}
+
+function collectMessageContent(msg: Record<string, unknown>, parts: string[]) {
+  const content = msg.content;
+  if (typeof content === "string") {
+    parts.push(content);
+    return;
+  }
+  if (!Array.isArray(content)) return;
+  for (const item of content) {
+    if (typeof item === "string") parts.push(item);
+    else if (item && typeof item === "object") {
+      const it = item as Record<string, unknown>;
+      if (typeof it.text === "string") parts.push(it.text);
+      if (typeof it.content === "string") parts.push(it.content);
+      if (typeof it.name === "string") parts.push(it.name);
+      // Codex input_text blocks
+      if (it.type === "input_text" && typeof it.text === "string") parts.push(it.text);
+      if (it.type === "output_text" && typeof it.text === "string") parts.push(it.text);
+    }
+  }
 }
 
 function safeStringify(v: unknown): string {
@@ -187,6 +212,12 @@ export async function discoverSessionFiles(arg: string | undefined, cwd: string)
     files = await fg(`${projectsDir}/**/*.jsonl`, { onlyFiles: true });
   }
   return files.sort();
+}
+
+/** Newest session log for a project cwd (by mtime). Claude, Codex, or Cursor. */
+export async function findLatestSessionForCwd(cwd: string): Promise<string | null> {
+  const ref = findLatestSessionForProject(cwd);
+  return ref?.path ?? null;
 }
 
 async function safeStat(p: string): Promise<"file" | "dir" | null> {

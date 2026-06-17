@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionEnd": [
+      {
+        "command": "node \"/Users/syf/Desktop/RuleDoctor工作区/rule-doctor/scripts/session-end.mjs\" # ruledoctor-session-end",
+        "timeout": 120
+      }
+    ]
+  }
+}

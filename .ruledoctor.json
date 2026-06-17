@@ -1,0 +1,16 @@
+{
+  "checks": [
+    {
+      "rule": "push --force",
+      "type": "forbid-command",
+      "command": "push --force",
+      "message": "会话中出现了被禁止的 force push"
+    },
+    {
+      "rule": "push -f",
+      "type": "forbid-command",
+      "command": "push -f",
+      "message": "会话中出现了被禁止的 force push (-f)"
+    }
+  ]
+}

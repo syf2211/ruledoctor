@@ -28,6 +28,10 @@
   "main": "dist/index.js",
   "files": [
     "dist",
+    "scripts",
+    "skills",
+    "plugin",
+    ".claude-plugin",
     "README.md",
     "LICENSE"
   ],
@@ -40,6 +44,10 @@
     "start": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --import tsx --test test/*.test.ts",
+    "demo": "npm run build && node dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl",
+    "demo:html": "npm run build && node dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl --format html --out docs/demo-report.html",
+    "demo:video": "node docs/record-demo-video.mjs && python3 -c \"import imageio_ffmpeg,subprocess,sys; ff=imageio_ffmpeg.get_ffmpeg_exe(); subprocess.check_call([ff,'-y','-i','docs/demo-walkthrough.webm','-c:v','libx264','-pix_fmt','yuv420p','-movflags','+faststart','docs/demo-walkthrough.mp4'])\"",
+    "setup:here": "npm run build && node dist/index.js setup -p .",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
@@ -49,6 +57,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "playwright": "^1.49.1",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   }

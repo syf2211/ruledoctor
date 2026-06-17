@@ -32,12 +32,25 @@ export function buildReport(
   const passedChecks = passed.length;
 
   const readRatePct = totalRules ? Math.round((presentRules / totalRules) * 100) : 0;
-  // compliance over checked rules only; no checks => neutral 100 (won't drag score)
-  const compliancePct = checkedRules ? Math.round((passedChecks / checkedRules) * 100) : 100;
+  const complianceConfigured = checkedRules > 0;
+  const compliancePct = complianceConfigured ? Math.round((passedChecks / checkedRules) * 100) : null;
 
-  const score = Math.round(readRatePct * 0.4 + compliancePct * 0.6);
+  const score = complianceConfigured
+    ? Math.round(readRatePct * 0.4 + (compliancePct ?? 0) * 0.6)
+    : readRatePct;
 
-  return { score, readRatePct, compliancePct, totalRules, presentRules, checkedRules, passedChecks, rows, notes };
+  return {
+    score,
+    readRatePct,
+    compliancePct,
+    totalRules,
+    presentRules,
+    checkedRules,
+    passedChecks,
+    rows,
+    notes,
+    complianceConfigured,
+  };
 }
 
 export type Lamp = "g" | "y" | "r";
@@ -60,15 +73,32 @@ function truncate(s: string, n: number): string {
 
 /** Colored terminal report. */
 export function renderTerminal(rep: Report): string {
-  const grade = rep.score >= 80 ? "良好" : rep.score >= 50 ? "一般" : "不及格 ⚠";
-  const scoreColor = rep.score >= 80 ? pc.green : rep.score >= 50 ? pc.yellow : pc.red;
+  const grade = !rep.complianceConfigured
+    ? "仅读到率（未配置遵守检查）"
+    : rep.score >= 80
+      ? "良好"
+      : rep.score >= 50
+        ? "一般"
+        : "不及格 ⚠";
+  const scoreColor = !rep.complianceConfigured
+    ? rep.score >= 80
+      ? pc.green
+      : rep.score >= 50
+        ? pc.yellow
+        : pc.red
+    : rep.score >= 80
+      ? pc.green
+      : rep.score >= 50
+        ? pc.yellow
+        : pc.red;
 
   const lines: string[] = [];
   lines.push("");
   lines.push(pc.bold("  RuleDoctor · 规则体检"));
+  const compLabel = rep.compliancePct === null ? "—" : `${rep.compliancePct}%`;
   lines.push(
     `  ${scoreColor(pc.bold(`${rep.score}/100`))}  ${scoreColor(grade)}    ` +
-      pc.dim(`读到率 ${rep.readRatePct}%  ·  遵守率 ${rep.compliancePct}%  ·  检查 ${rep.checkedRules}/${rep.totalRules}`),
+      pc.dim(`读到率 ${rep.readRatePct}%  ·  遵守率 ${compLabel}  ·  检查 ${rep.checkedRules}/${rep.totalRules}`),
   );
   lines.push(pc.dim("  " + "─".repeat(64)));
 
@@ -128,7 +158,15 @@ export function renderHTML(rep: Report): string {
     .join("\n");
 
   const scoreColor = rep.score >= 80 ? "#30D158" : rep.score >= 50 ? "#FFD60A" : "#FF453A";
-  const grade = rep.score >= 80 ? "良好" : rep.score >= 50 ? "一般" : "不及格 ⚠️";
+  const grade = !rep.complianceConfigured
+    ? "仅读到率 · 未配置遵守检查"
+    : rep.score >= 80
+      ? "良好"
+      : rep.score >= 50
+        ? "一般"
+        : "不及格 ⚠️";
+  const compStat = rep.compliancePct === null ? "—" : `${rep.compliancePct}%`;
+  const compStatColor = rep.compliancePct === null ? "#6B7790" : rep.compliancePct >= 50 ? "#30D158" : "#FF453A";
 
   return `<!DOCTYPE html>
 <html lang="zh"><head><meta charset="UTF-8"><title>RuleDoctor 体检报告</title>
@@ -162,7 +200,7 @@ export function renderHTML(rep: Report): string {
     <div class="meta"><div class="t">${grade}</div><div class="d">${rep.totalRules} 条规则 · ${rep.presentRules} 条进入上下文 · ${rep.passedChecks}/${rep.checkedRules} 项检查通过</div></div></div>
   <div class="stats">
     <div class="stat"><div class="k">读到率</div><div class="v" style="color:${rep.readRatePct>=50?'#30D158':'#FF453A'}">${rep.readRatePct}%</div></div>
-    <div class="stat"><div class="k">遵守率</div><div class="v" style="color:${rep.compliancePct>=50?'#30D158':'#FF453A'}">${rep.compliancePct}%</div></div>
+    <div class="stat"><div class="k">遵守率</div><div class="v" style="color:${compStatColor}">${compStat}</div></div>
     <div class="stat"><div class="k">已检查</div><div class="v">${rep.checkedRules}/${rep.totalRules}</div></div>
   </div>
   <table><tr><th>规则</th><th>读到</th><th class="r">遵守</th></tr>${rows}</table>

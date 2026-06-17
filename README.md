@@ -17,6 +17,18 @@
 
 ---
 
+## 10 秒读懂（中文）
+
+| 今天 v0.1 是什么 | 今天不是什么 |
+|------------------|--------------|
+| Claude Code **事后**规则体检：会话 jsonl + 项目规则文件 | 实时盯屏、自动改 Agent 行为 |
+| 分清「**没读到**」vs「**没遵守**」（可配置 checker） | 统一管理 Skills / Scale / 全局 rules |
+| `ruledoctor inventory` 看**到底在检查哪些规则** | LLM 当法官打分 |
+
+**完整产品定义（范围、检测原理、误判、路线图）：** [docs/产品定义-现状与路线图.md](docs/产品定义-现状与路线图.md)
+
+---
+
 ## The problem
 
 You wrote rules in `.cursorrules` / `CLAUDE.md` / `AGENTS.md`. The model **doesn't follow them**. And it never tells you why — it just silently produces code that violates them, and you're left assuming the AI "got dumber."

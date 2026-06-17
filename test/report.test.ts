@@ -35,7 +35,7 @@ test("score blends 40% read-rate + 60% compliance", () => {
   assert.equal(rep.score, 50);
 });
 
-test("no checks => compliance is neutral (100), score driven by read-rate", () => {
+test("no checks => read-rate only score, compliance not configured", () => {
   const rules = [rule(1, "a"), rule(2, "b")];
   const read = [
     { ruleId: "R1", confidence: 1, present: true, matched: 1, total: 1 },
@@ -43,8 +43,9 @@ test("no checks => compliance is neutral (100), score driven by read-rate", () =
   ];
   const comp = rules.map((r) => ({ ruleId: r.id, status: "unknown" as const, detail: "", checkType: null }));
   const rep = buildReport(rules, read, comp, []);
-  assert.equal(rep.compliancePct, 100);
-  assert.equal(rep.score, Math.round(50 * 0.4 + 100 * 0.6));
+  assert.equal(rep.complianceConfigured, false);
+  assert.equal(rep.compliancePct, null);
+  assert.equal(rep.score, 50);
 });
 
 test("lampOf mapping", () => {

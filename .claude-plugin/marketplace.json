@@ -1,0 +1,23 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "syf2211-ruledoctor",
+  "description": "RuleDoctor — rule reinjection after compaction, command guard, session compliance reports",
+  "owner": {
+    "name": "syf2211",
+    "url": "https://github.com/syf2211"
+  },
+  "plugins": [
+    {
+      "name": "ruledoctor",
+      "description": "Re-inject CLAUDE.md rules after compaction, block forbidden shell commands, run RuleDoctor reports on session end.",
+      "version": "0.1.0",
+      "author": {
+        "name": "syf2211",
+        "url": "https://github.com/syf2211/ruledoctor"
+      },
+      "category": "utilities",
+      "source": "./plugin",
+      "homepage": "https://github.com/syf2211/ruledoctor"
+    }
+  ]
+}

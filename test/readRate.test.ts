@@ -1,6 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { tokenizeRule, scoreReadRate } from "../src/readRate.js";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { tokenizeRule, scoreReadRate, buildCorpus } from "../src/readRate.js";
 import type { Rule } from "../src/types.js";
 
 test("tokenizeRule extracts CJK bigrams", () => {
@@ -27,9 +30,22 @@ test("a rule whose distinctive tokens are absent is not present", () => {
   assert.equal(r.present, false);
 });
 
+test("buildCorpus reads Cursor agent transcript lines", () => {
+  const line = JSON.stringify({
+    role: "user",
+    message: { content: [{ type: "text", text: "禁止 force push 到 main" }] },
+  });
+  const dir = mkdtempSync(join(tmpdir(), "rd-"));
+  const f = join(dir, "t.jsonl");
+  writeFileSync(f, line);
+  const { text } = buildCorpus([f]);
+  rmSync(dir, { recursive: true, force: true });
+  assert.ok(text.includes("force"));
+  assert.ok(text.includes("push"));
+});
+
 test("latin token matches on word boundary (any != many)", () => {
   const rules: Rule[] = [{ id: "R1", text: "禁止 any 标识符", section: null, source: "t" }];
-  // "many" contains "any" as a substring but should NOT match a word-boundary token
   const [r] = scoreReadRate(rules, "there are many records here");
   assert.equal(r.present, false);
 });

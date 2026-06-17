@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh"><head><meta charset="UTF-8"><title>RuleDoctor 体检报告</title>
+<style>
+  :root{--bg:#0B0E14;--card:#161C2B;--line:#263049;--muted:#9AA7BD;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",Arial,sans-serif;background:var(--bg);color:#fff;padding:48px;}
+  .wrap{max-width:920px;margin:0 auto;}
+  .head{display:flex;align-items:center;gap:18px;margin-bottom:28px;}
+  .logo{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#5E5CE6,#FF2D55);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;}
+  h1{font-size:30px;font-weight:900;} .head .sub{color:var(--muted);font-size:18px;}
+  .score{display:flex;align-items:center;gap:30px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:28px 32px;margin-bottom:24px;}
+  .ring{width:120px;height:120px;border-radius:50%;background:conic-gradient(#FF453A 0 37%, #2A3350 37% 100%);display:flex;align-items:center;justify-content:center;}
+  .ring .in{width:94px;height:94px;border-radius:50%;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .ring .n{font-size:42px;font-weight:900;color:#FF453A;} .ring .u{font-size:14px;color:var(--muted);}
+  .score .meta .t{font-size:26px;font-weight:900;margin-bottom:6px;} .score .meta .d{font-size:16px;color:var(--muted);}
+  .stats{display:flex;gap:14px;margin-bottom:20px;} .stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;}
+  .stat .k{color:var(--muted);font-size:14px;} .stat .v{font-size:24px;font-weight:900;margin-top:4px;}
+  table{width:100%;border-collapse:separate;border-spacing:0 8px;}
+  th{color:#6B7790;text-align:left;font-size:13px;font-weight:600;padding:0 14px;}
+  th.r,td.r{text-align:right;} td{background:var(--card);padding:14px;font-size:16px;}
+  td:first-child{border-radius:12px 0 0 12px;} td:last-child{border-radius:0 12px 12px 0;}
+  .ln{display:flex;align-items:center;gap:12px;} .ln code{font-family:"SF Mono",Menlo,monospace;color:#9AA7BD;font-size:13px;}
+  .lamp{width:14px;height:14px;border-radius:50%;display:inline-block;flex:none;}
+  .lamp.g{background:#30D158;box-shadow:0 0 12px #30D158;} .lamp.y{background:#FFD60A;box-shadow:0 0 12px #FFD60A;} .lamp.r{background:#FF453A;box-shadow:0 0 12px #FF453A;}
+  .foot{margin-top:24px;color:#6B7790;font-size:14px;}
+</style></head>
+<body><div class="wrap">
+  <div class="head"><div class="logo">R</div><div><h1>RuleDoctor · 规则体检报告</h1><div class="sub">读到率 = 规则是否进入了模型上下文 · 遵守率 = 是否被实际遵守</div></div></div>
+  <div class="score"><div class="ring"><div class="in"><div class="n">37</div><div class="u">/ 100</div></div></div>
+    <div class="meta"><div class="t">不及格 ⚠️</div><div class="d">8 条规则 · 5 条进入上下文 · 1/5 项检查通过</div></div></div>
+  <div class="stats">
+    <div class="stat"><div class="k">读到率</div><div class="v" style="color:#30D158">63%</div></div>
+    <div class="stat"><div class="k">遵守率</div><div class="v" style="color:#FF453A">20%</div></div>
+    <div class="stat"><div class="k">已检查</div><div class="v">5/8</div></div>
+  </div>
+  <table><tr><th>规则</th><th>读到</th><th class="r">遵守</th></tr><tr>
+        <td><span class="ln"><span class="lamp r"></span><code>R1</code> 金额必须用整数「分」，禁止用浮点。</span></td>
+        <td style="color:#30D158">100%</td>
+        <td class="r" style="color:#FF453A;font-weight:800">✗</td>
+      </tr>
+<tr>
+        <td><span class="ln"><span class="lamp g"></span><code>R2</code> 错误必须用中文 ErrorXxx 抛出。</span></td>
+        <td style="color:#30D158">100%</td>
+        <td class="r" style="color:#30D158;font-weight:800">✓</td>
+      </tr>
+<tr>
+        <td><span class="ln"><span class="lamp y"></span><code>R3</code> 提交前必须运行 npm run lint。</span></td>
+        <td style="color:#30D158">100%</td>
+        <td class="r" style="color:#6B7790;font-weight:800">—</td>
+      </tr>
+<tr>
+        <td><span class="ln"><span class="lamp r"></span><code>R4</code> 严禁使用 any 类型。</span></td>
+        <td style="color:#FF453A">25%</td>
+        <td class="r" style="color:#FF453A;font-weight:800">✗</td>
+      </tr>
+<tr>
+        <td><span class="ln"><span class="lamp r"></span><code>R5</code> 日期格式统一 YYYY-MM-DD，禁止斜杠。</span></td>
+        <td style="color:#FF453A">11%</td>
+        <td class="r" style="color:#FF453A;font-weight:800">✗</td>
+      </tr>
+<tr>
+        <td><span class="ln"><span class="lamp r"></span><code>R6</code> 仓库禁止执行 git push --force。</span></td>
+        <td style="color:#30D158">100%</td>
+        <td class="r" style="color:#FF453A;font-weight:800">✗</td>
+      </tr>
+<tr>
+        <td><span class="ln"><span class="lamp r"></span><code>R7</code> API 响应必须做异常兜底，不允许裸 throw。</span></td>
+        <td style="color:#FF453A">8%</td>
+        <td class="r" style="color:#6B7790;font-weight:800">—</td>
+      </tr>
+<tr>
+        <td><span class="ln"><span class="lamp y"></span><code>R8</code> 注释一律使用中文。</span></td>
+        <td style="color:#30D158">100%</td>
+        <td class="r" style="color:#6B7790;font-weight:800">—</td>
+      </tr></table>
+  <div class="foot">Generated by RuleDoctor · 规则体检 · <a style="color:#5E5CE6" href="https://github.com/syf2211/ruledoctor">github.com/syf2211/ruledoctor</a></div>
+</div></body></html>

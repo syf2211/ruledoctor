@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RuleDoctor 实际效果演示</title>
+  <style>
+    :root {
+      --bg: #0b0e14;
+      --card: #161c2b;
+      --line: #263049;
+      --muted: #9aa7bd;
+      --accent: #5e5ce6;
+      --green: #30d158;
+      --red: #ff453a;
+      --yellow: #ffd60a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: #fff;
+      line-height: 1.55;
+    }
+    .hero {
+      padding: 48px 24px 32px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 13px;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 14px;
+      margin-bottom: 16px;
+    }
+    h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 900; margin-bottom: 12px; }
+    .lead { color: var(--muted); font-size: 17px; max-width: 720px; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px 48px;
+    }
+    @media (min-width: 960px) {
+      .grid.two { grid-template-columns: 1fr 1fr; }
+    }
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 22px 24px;
+    }
+    h2 { font-size: 20px; margin-bottom: 12px; }
+    h3 { font-size: 15px; color: var(--muted); margin: 16px 0 8px; font-weight: 600; }
+    p, li { color: #d8e0ef; font-size: 15px; }
+    ul { padding-left: 20px; }
+    li { margin: 6px 0; }
+    .why {
+      border-left: 3px solid var(--accent);
+      padding-left: 14px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    pre, code {
+      font-family: "SF Mono", Menlo, Monaco, monospace;
+      font-size: 12.5px;
+    }
+    pre {
+      background: #0a0d12;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      overflow: auto;
+      color: #c8d4ea;
+      white-space: pre-wrap;
+      margin-top: 10px;
+    }
+    .term .ok { color: var(--green); }
+    .term .bad { color: var(--red); }
+    .term .warn { color: var(--yellow); }
+    iframe {
+      width: 100%;
+      height: 520px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #0a0d12;
+      margin-top: 12px;
+    }
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .step {
+      flex: 1 1 140px;
+      background: #0a0d12;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+    }
+    .step b { display: block; color: #fff; margin-bottom: 4px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); font-weight: 600; }
+    .lamp { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .lamp.r { background: var(--red); }
+    .lamp.g { background: var(--green); }
+    .lamp.y { background: var(--yellow); }
+    video {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      margin-top: 12px;
+      background: #000;
+    }
+    a { color: #8b88ff; }
+    .cmd { color: var(--green); }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="badge">本地实测 · 2026-06-17</div>
+    <h1>RuleDoctor 实际使用效果</h1>
+    <p class="lead">
+      这不是概念稿：下面终端输出、HTML 报告、以及（若已生成）演示视频，都来自同一条命令在
+      <code>examples/demo-project</code> 上的真实运行结果。
+    </p>
+    <p class="why">
+      <strong>为什么之前先到了「推送 GitHub」？</strong>
+      原 Claude 会话的目标是「挖痛点 → 选题 → 可传播的开源 MVP」流水线，/goal 把完成标准定成「代码 + 宣传物料可上线」；
+      你后来让我接手时优先补的是发布闭环，所以演示文档这一步被跳过了——这里补上。
+    </p>
+  </header>
+
+  <div class="grid">
+    <section>
+      <h2>1. 这个 demo 在模拟什么？</h2>
+      <p>假想的「订单服务」项目：你在 <code>.cursorrules</code> 里写了 8 条硬性规则，AI 帮你写了
+        <code>src/orders.ts</code>，还在会话里执行了 <code>git push --force</code>。</p>
+      <h3>代码里故意留的坑</h3>
+      <ul>
+        <li>金额用浮点 <code>99.5</code>（规则要求整数「分」）</li>
+        <li>日期 <code>2026/06/16</code>（规则要求 YYYY-MM-DD）</li>
+        <li>使用了 <code>any</code></li>
+        <li>错误类名用了 <code>ErrorXxx</code>（这条反而遵守了）</li>
+      </ul>
+      <h3>会话日志里故意设计的「读率」故事</h3>
+      <p>
+        <code>session.jsonl</code> 里，<strong>只有部分规则</strong>出现在发给模型的
+        <code>&lt;system_context&gt;</code> 中（模拟「规则没全加载 / 被截断」）。
+        同时 tool 结果里出现 <code>git push --force</code>，用于检测「读到了却违反」。
+      </p>
+    </section>
+
+    <section>
+      <h2>2. 你怎么用（一条命令）</h2>
+      <pre><span class="cmd">cd</span> ruledoctor
+npm install && npm run build
+node dist/index.js \
+  --cwd examples/demo-project \
+  --session examples/demo-project/session.jsonl
+
+<span class="cmd"># HTML 报告</span>
+node dist/index.js \
+  --cwd examples/demo-project \
+  --session examples/demo-project/session.jsonl \
+  --format html --out docs/demo-report.html
+
+<span class="cmd"># CI 门禁（低于 80 分则 exit 1）</span>
+node dist/index.js ... --min-score 80; echo exit:$?</pre>
+    </section>
+  </div>
+
+  <div class="grid">
+    <section>
+      <h2>3. 终端输出（实测）</h2>
+      <div class="flow">
+        <div class="step"><b>总分</b>37/100 · 不及格</div>
+        <div class="step"><b>读到率</b>63%（5/8 条进上下文）</div>
+        <div class="step"><b>遵守率</b>20%（5 项检查里 1 项通过）</div>
+      </div>
+      <pre class="term">  RuleDoctor · 规则体检
+  <span class="bad">37/100  不及格 ⚠</span>    读到率 63%  ·  遵守率 20%  ·  检查 5/8
+  ────────────────────────────────────────────────────────────────
+  ● R1  金额必须用整数「分」，禁止用浮点。                            读到 100%   <span class="bad">✗</span>
+  ● R2  错误必须用中文 ErrorXxx 抛出。                         读到 100%   <span class="ok">✓</span>
+  ● R3  提交前必须运行 npm run lint。                        读到 100%   —
+  ● R4  严禁使用 any 类型。                                 读到  25%   <span class="bad">✗</span>
+  ● R5  日期格式统一 YYYY-MM-DD，禁止斜杠。                      读到  11%   <span class="bad">✗</span>
+  ● R6  仓库禁止执行 git push --force。                     读到 100%   <span class="bad">✗</span>
+  ● R7  API 响应必须做异常兜底，不允许裸 throw。                    读到   8%   —
+  ● R8  注释一律使用中文。                                    读到 100%   —
+  ────────────────────────────────────────────────────────────────
+  违规详情:
+    <span class="bad">✗ R1</span>  发现浮点金额，规则要求整数「分」
+    <span class="bad">✗ R4</span>  出现了被禁止的 any 类型
+    <span class="bad">✗ R5</span>  出现斜杠日期，规则要求 YYYY-MM-DD
+    <span class="bad">✗ R6</span>  会话中出现了被禁止的 force push
+  未进入上下文的规则:
+    <span class="bad">✗ R4</span>  严禁使用 any 类型。
+    <span class="bad">✗ R5</span>  日期格式统一 YYYY-MM-DD，禁止斜杠。
+    <span class="bad">✗ R7</span>  API 响应必须做异常兜底，不允许裸 throw。</pre>
+      <p style="margin-top:12px;color:var(--muted);font-size:14px;">
+        亮点案例 <strong>R6</strong>：规则文本在会话里出现过（读到 100%），但模型仍执行了 force push——静态 linter 永远抓不到这种「明知故犯」。
+      </p>
+    </section>
+
+    <section>
+      <h2>4. 工具在算什么？</h2>
+      <table>
+        <tr><th>维度</th><th>数据来源</th><th>含义</th></tr>
+        <tr><td>读到率</td><td>Claude Code 式 <code>.jsonl</code> 会话</td><td>规则 distinctive 词是否出现在发给模型的语料里（离线、不调模型）</td></tr>
+        <tr><td>遵守率</td><td><code>.ruledoctor.json</code> 检查器 + 代码树 + 会话命令</td><td>正则/命令类规则是否被违反</td></tr>
+        <tr><td>总分</td><td>40% 读到 + 60% 遵守</td><td>用于排序和 CI <code>--min-score</code></td></tr>
+      </table>
+      <h3>本 demo 检查器配置</h3>
+      <p>浮点金额、斜杠日期、<code>any</code>、<code>ErrorXxx</code>、<code>push --force</code> 共 5 项；未配置检查器的规则显示「—」。</p>
+    </section>
+  </div>
+
+  <div class="grid" style="padding-bottom: 24px;">
+    <section style="grid-column: 1 / -1;">
+      <h2>5. HTML 报告（内嵌，与 CLI 生成文件一致）</h2>
+      <p style="color:var(--muted);font-size:14px;">
+        独立文件：<a href="demo-report.html">docs/demo-report.html</a> · 与宣传图同款深色仪表盘
+      </p>
+      <iframe src="demo-report.html" title="RuleDoctor HTML report"></iframe>
+    </section>
+  </div>
+
+  <div class="grid" style="padding-bottom: 48px;">
+    <section style="grid-column: 1 / -1;">
+      <h2>6. 演示视频</h2>
+      <p style="color:var(--muted);font-size:14px;">
+        若存在 <code>demo-walkthrough.mp4</code> 或 <code>demo-walkthrough.webm</code>，为自动滚动本页的录屏。
+      </p>
+      <video id="v" controls playsinline></video>
+      <script>
+        (function () {
+          const v = document.getElementById("v");
+          const candidates = ["demo-walkthrough.mp4", "demo-walkthrough.webm"];
+          let i = 0;
+          function tryNext() {
+            if (i >= candidates.length) {
+              v.outerHTML = "<p style='color:#9aa7bd;font-size:14px'>视频文件未生成。可在项目根目录执行：<code>npm run demo:video</code></p>";
+              return;
+            }
+            const src = candidates[i++];
+            v.src = src;
+            v.onerror = tryNext;
+          }
+          tryNext();
+        })();
+      </script>
+    </section>
+  </div>
+</body>
+</html>

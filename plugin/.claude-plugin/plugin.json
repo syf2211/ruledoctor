@@ -1,0 +1,9 @@
+{
+  "name": "ruledoctor",
+  "version": "0.1.0",
+  "description": "RuleDoctor — reinject rules after compaction, block forbidden commands, audit session logs for read-rate and compliance.",
+  "author": {
+    "name": "syf2211",
+    "url": "https://github.com/syf2211/ruledoctor"
+  }
+}
