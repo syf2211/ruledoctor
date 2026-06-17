@@ -1,0 +1,43 @@
+{
+  // 把每个 check 用一个「能唯一匹配到某条规则」的子串关联起来。
+  // type:
+  //   forbid-regex   pattern 不能出现在匹配文件里
+  //   require-regex  pattern 必须至少出现一次
+  //   forbid-command 会话中不能出现该命令子串
+  "checks": [
+    {
+      "rule": "整数「分」",
+      "type": "forbid-regex",
+      "pattern": "\\d+\\.\\d+",
+      "paths": ["src/**"],
+      "message": "发现浮点金额，规则要求整数「分」"
+    },
+    {
+      "rule": "ErrorXxx",
+      "type": "require-regex",
+      "pattern": "ErrorXxx",
+      "paths": ["src/**"],
+      "message": "错误未用 ErrorXxx 抛出"
+    },
+    {
+      "rule": "any 类型",
+      "type": "forbid-regex",
+      "pattern": "\\bany\\b",
+      "paths": ["src/**"],
+      "message": "出现了被禁止的 any 类型"
+    },
+    {
+      "rule": "YYYY-MM-DD",
+      "type": "forbid-regex",
+      "pattern": "\\d{4}/\\d{1,2}/\\d{1,2}",
+      "paths": ["src/**"],
+      "message": "出现斜杠日期，规则要求 YYYY-MM-DD"
+    },
+    {
+      "rule": "push --force",
+      "type": "forbid-command",
+      "command": "push --force",
+      "message": "会话中出现了被禁止的 force push"
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>体检报告</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .glow1{width:500px;height:500px;background:#5E5CE6;top:-160px;left:-160px;opacity:.40;}
+  .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;position:relative;z-index:2;}
+  .score{display:flex;align-items:center;gap:36px;margin-bottom:30px;position:relative;z-index:2;}
+  .ring{
+    width:200px;height:200px;border-radius:50%;flex:none;
+    background:conic-gradient(var(--red) 0 38%, #2A3350 38% 100%);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 60px rgba(255,69,58,.25);
+  }
+  .ring .in{
+    width:158px;height:158px;border-radius:50%;background:var(--bg);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+  }
+  .ring .in .n{font-size:74px;font-weight:900;line-height:1;}
+  .ring .in .u{font-size:22px;color:var(--muted);margin-top:4px;}
+  .score .meta .t{font-size:50px;font-weight:900;margin-bottom:8px;}
+  .score .meta .d{font-size:26px;color:var(--muted);line-height:1.45;}
+  .score .meta .d b{color:var(--red);}
+  table{width:100%;border-collapse:separate;border-spacing:0 12px;position:relative;z-index:2;}
+  th{font-size:20px;color:var(--dim);text-align:left;font-weight:600;padding:0 16px;}
+  th.r,td.r{text-align:right;}
+  td{background:var(--card);padding:18px 16px;font-size:25px;}
+  td:first-child{border-radius:14px 0 0 14px;}
+  td:last-child{border-radius:0 14px 14px 0;}
+  td .ln{display:flex;align-items:center;gap:16px;}
+  td .ln code{font-weight:700;font-family:"SF Mono",Menlo,monospace;font-size:23px;}
+  .foot .src{max-width:560px;}
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="glow glow1"></div>
+
+  <div class="head">
+    <span class="tag"><span class="dot"></span>你的项目 · 规则体检报告</span>
+    <span class="pill">Demo · 2/3</span>
+  </div>
+
+  <div class="score">
+    <div class="ring"><div class="in"><div class="n" style="color:var(--red)">38</div><div class="u">/ 100 分</div></div></div>
+    <div class="meta">
+      <div class="t">不及格 ⚠️</div>
+      <div class="d">8 条规则里,只有 <b>3 条被真正遵守</b>。<br>另外 5 条——你在跟空气签合同。</div>
+    </div>
+  </div>
+
+  <table>
+    <tr><th style="width:46%">规则</th><th>读到</th><th class="r">遵守</th></tr>
+    <tr>
+      <td><div class="ln"><span class="lamp g"></span><code>金额用整数「分」</code></div></td>
+      <td style="color:var(--green)">100%</td><td class="r" style="color:var(--green);font-weight:800">✓</td>
+    </tr>
+    <tr>
+      <td><div class="ln"><span class="lamp g"></span><code>错误用中文 ErrorXxx 抛出</code></div></td>
+      <td style="color:var(--green)">98%</td><td class="r" style="color:var(--green);font-weight:800">✓</td>
+    </tr>
+    <tr>
+      <td><div class="ln"><span class="lamp y"></span><code>提交前跑 npm run lint</code></div></td>
+      <td style="color:var(--green)">95%</td><td class="r" style="color:var(--red);font-weight:800">✗ 41%</td>
+    </tr>
+    <tr>
+      <td><div class="ln"><span class="lamp y"></span><code>不使用 any 类型</code></div></td>
+      <td style="color:var(--green)">90%</td><td class="r" style="color:var(--red);font-weight:800">✗ 22%</td>
+    </tr>
+    <tr>
+      <td><div class="ln"><span class="lamp r"></span><code>日期格式 YYYY-MM-DD</code></div></td>
+      <td style="color:var(--red)">0%</td><td class="r" style="color:var(--red);font-weight:800">—</td>
+    </tr>
+    <tr>
+      <td><div class="ln"><span class="lamp r"></span><code>禁止 git push --force</code></div></td>
+      <td style="color:var(--red)">12%</td><td class="r" style="color:var(--red);font-weight:800">✗</td>
+    </tr>
+  </table>
+
+  <div class="foot">
+    <span class="src">🔍 读到率:这条规则真的进模型上下文了吗?<br>✓ 遵守率:读到了,这次任务里照做了吗?</span>
+    <span class="pill">左滑:RuleDoctor 怎么测出来的</span>
+  </div>
+</div>
+</body>
+</html>

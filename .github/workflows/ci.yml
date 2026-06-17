@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      # smoke-test the built CLI on the bundled demo
+      - run: node dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl --format json
+      # the demo is intentionally unhealthy — assert it gates below 70
+      - run: |
+          if node dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl --min-score 70; then
+            echo "expected the demo to fail the gate"; exit 1
+          else
+            echo "gate correctly blocked the unhealthy demo ✓"
+          fi

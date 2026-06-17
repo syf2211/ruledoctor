@@ -1,0 +1,55 @@
+{
+  "name": "ruledoctor",
+  "version": "0.1.0",
+  "description": "Coverage for your AI coding rules — measure whether .cursorrules / CLAUDE.md / AGENTS.md were actually read and followed by the model. 规则体检。",
+  "type": "module",
+  "license": "MIT",
+  "author": "",
+  "homepage": "https://github.com/ruledoctor/ruledoctor",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ruledoctor/ruledoctor.git"
+  },
+  "keywords": [
+    "claude-code",
+    "cursor",
+    "cursorrules",
+    "agents-md",
+    "ai-coding",
+    "rules",
+    "llm",
+    "observability",
+    "context-engineering",
+    "cli"
+  ],
+  "bin": {
+    "ruledoctor": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --import tsx --test test/*.test.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "fast-glob": "^3.3.3",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

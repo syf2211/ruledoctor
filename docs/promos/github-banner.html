@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>RuleDoctor — GitHub Banner</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .canvas.banner{flex-direction:row;}
+  .glow1{width:560px;height:560px;background:#5E5CE6;top:-220px;left:-120px;opacity:.42;}
+  .glow2{width:420px;height:420px;background:#FF2D55;bottom:-180px;right:30%;opacity:.22;}
+  .left{flex:1.15;padding:40px 72px;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:2;}
+  .right{width:560px;padding:32px 56px 32px 0;display:flex;align-items:center;justify-content:center;position:relative;z-index:2;}
+  .left .brand{margin-bottom:26px;}
+  .left .brand .logo{width:72px;height:72px;border-radius:20px;font-size:40px;}
+  .left .brand .name{font-size:46px;}
+  .left .brand .sub{font-size:22px;}
+  .slogan{font-size:46px;font-weight:900;line-height:1.1;letter-spacing:-1px;margin-bottom:18px;}
+  .slogan .em{color:var(--pink);}
+  .subline{font-size:24px;color:var(--muted);line-height:1.5;margin-bottom:26px;}
+  .feats{display:flex;gap:10px;flex-wrap:nowrap;}
+  .feats span{
+    font-size:17px;font-weight:700;padding:7px 14px;border-radius:999px;
+    background:var(--card2);border:1px solid var(--line);color:#D7DEEB;
+  }
+  .mini{
+    width:100%;background:var(--card);border:1px solid var(--line);border-radius:24px;
+    padding:30px 30px 26px;box-shadow:0 24px 70px rgba(0,0,0,.45);
+  }
+  .mini .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .mini .top .t{font-size:22px;color:var(--muted);font-weight:700;}
+  .mini .top .sc{font-size:30px;font-weight:900;color:var(--red);}
+  .mini .row{display:flex;align-items:center;gap:14px;padding:13px 0;border-top:1px solid var(--line);font-size:21px;}
+  .mini .row code{font-family:"SF Mono",Menlo,monospace;font-size:19px;color:#D7DEEB;}
+  .mini .row .pc{margin-left:auto;font-size:19px;font-weight:800;}
+</style>
+</head>
+<body>
+<div class="canvas banner">
+  <div class="glow glow1"></div>
+  <div class="glow glow2"></div>
+
+  <div class="left">
+    <div class="brand">
+      <div class="logo">R</div>
+      <div>
+        <div class="name">RuleDoctor</div>
+        <div class="sub">规则体检 · Coverage for your AI coding rules</div>
+      </div>
+    </div>
+    <div class="slogan">你写的 AI 编程规则<br><span class="em">真的被遵守了吗?</span></div>
+    <div class="subline">检测 <code>.cursorrules</code> / <code>CLAUDE.md</code> / <code>AGENTS.md</code> 到底有没有被模型读到、有没有照做。规则失效不再静默。</div>
+    <div class="feats">
+      <span>🔍 读到率 Read-rate</span>
+      <span>✓ 遵守率 Compliance</span>
+      <span>🛂 CI 卡 PR</span>
+      <span>🟢🟡🔴 状态灯</span>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="mini">
+      <div class="top"><span class="t">规则体检报告</span><span class="sc">38 / 100</span></div>
+      <div class="row"><span class="lamp g"></span><code>金额用整数「分」</code><span class="pc" style="color:var(--green)">✓</span></div>
+      <div class="row"><span class="lamp y"></span><code>提交前跑 lint</code><span class="pc" style="color:var(--yellow)">41%</span></div>
+      <div class="row"><span class="lamp r"></span><code>日期 YYYY-MM-DD</code><span class="pc" style="color:var(--red)">0%</span></div>
+      <div class="row"><span class="lamp r"></span><code>禁止 force-push</code><span class="pc" style="color:var(--red)">✗</span></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

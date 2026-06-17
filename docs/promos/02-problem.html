@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>问题页</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .glow1{width:480px;height:480px;background:#FF453A;top:-180px;right:-140px;opacity:.30;}
+  .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:34px;position:relative;z-index:2;}
+  .titleblock{position:relative;z-index:2;margin-bottom:34px;}
+  .h-big{margin-bottom:18px;}
+  .cards{position:relative;z-index:2;display:flex;flex-direction:column;gap:22px;}
+  .death{padding:30px 34px;}
+  .death .row1{display:flex;align-items:center;gap:18px;margin-bottom:10px;}
+  .death .row1 .t{font-size:38px;font-weight:900;}
+  .death .row1 .badge{font-size:22px;font-weight:800;padding:6px 16px;border-radius:10px;margin-left:auto;}
+  .death .d{font-size:25px;color:var(--muted);line-height:1.45;margin-bottom:14px;}
+  .quote{
+    font-size:23px;line-height:1.45;font-style:italic;
+    border-left:4px solid var(--line);padding:8px 0 8px 20px;color:#C7D2E2;
+  }
+  .quote b{color:#fff;font-style:normal;font-weight:700;}
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="glow glow1"></div>
+
+  <div class="head">
+    <span class="tag"><span class="dot"></span>为什么你的规则总不管用</span>
+    <span class="pill">问题 · 1/3</span>
+  </div>
+
+  <div class="titleblock">
+    <div class="h-big">规则失效,<br>有<span style="color:var(--red)">三种死法</span></div>
+    <div class="lead">而它们全都不报错——只能等到 QA、上线、甚至线上事故才暴露。</div>
+  </div>
+
+  <div class="cards">
+    <div class="card death">
+      <div class="row1"><span class="lamp r"></span><span class="t">① 根本没加载</span><span class="badge" style="background:var(--red);color:#fff">从未见过</span></div>
+      <div class="d">规则放错了文件、工具版本变了、路径没匹配上——模型从头到尾没读过它。</div>
+      <div class="quote">「<b>我明明在 .cursorrules 写了,它却好像根本不知道有这回事。</b>」</div>
+    </div>
+
+    <div class="card death">
+      <div class="row1"><span class="lamp y"></span><span class="t">② 加载了,但被挤掉</span><span class="badge" style="background:var(--yellow);color:#1a1a1a">被遗忘</span></div>
+      <div class="d">对话一长触发上下文压缩,或规则排在 5 万 token 之后——注意力根本分不到它。</div>
+      <div class="quote">「<b>It's getting frustrating… both Claude and GPT just ignore clear instructions.</b>」 — r/ChatGPTCoding</div>
+    </div>
+
+    <div class="card death">
+      <div class="row1"><span class="lamp r"></span><span class="t">③ 看到了,选择性无视</span><span class="badge" style="background:var(--red);color:#fff">主动违反</span></div>
+      <div class="d">模型自己权衡后觉得"代码美观"比"用整数分"更重要——明知故犯。</div>
+      <div class="quote">「<b>I've told it a dozen times not to force-push</b>, it still did.」 — r/ClaudeCode</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span class="src">Reddit 上,这类抱怨每天都在发生 →</span>
+    <span class="pill">左滑:看看你的规则体检报告</span>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>方案</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .glow1{width:500px;height:500px;background:#5E5CE6;bottom:-180px;right:-140px;opacity:.34;}
+  .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:36px;position:relative;z-index:2;}
+  .titleblock{position:relative;z-index:2;margin-bottom:44px;}
+  .h-big{margin-bottom:18px;}
+  .steps{position:relative;z-index:2;}
+  .foot{margin-top:48px;align-items:center;}
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="glow glow1"></div>
+
+  <div class="head">
+    <span class="tag"><span class="dot"></span>规则体检 · 怎么做</span>
+    <span class="pill">方案 · 3/3</span>
+  </div>
+
+  <div class="titleblock">
+    <div class="h-big">三步,把规则有效性<br>从<span style="color:var(--red)">黑箱</span>变成<span style="color:var(--green)">仪表盘</span></div>
+    <div class="lead">像单元测试给代码做覆盖率一样——给「规则」做覆盖率。</div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="n">1</div>
+      <div>
+        <div class="t">连上你的规则文件</div>
+        <div class="d">读取 <code>.cursorrules</code> / <code>CLAUDE.md</code> / <code>AGENTS.md</code>,为每条规则自动生成几个「探针问题」。</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">2</div>
+      <div>
+        <div class="t">任务结束,自动体检</div>
+        <div class="d">用探针悄悄测模型——这条规则真的进上下文了吗?<b style="color:#fff">读到率</b>。再检查实际代码有没有照做——<b style="color:#fff">遵守率</b>。</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="n">3</div>
+      <div>
+        <div class="t">出报告,还能进 CI</div>
+        <div class="d">每条规则一个状态灯;不通过的规则直接卡住 PR,不让「规则失效」悄悄溜上线。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span class="cta">★ GitHub · RuleDoctor →</span>
+    <span class="src" style="text-align:right">把规则有效性,从黑箱变成仪表盘。<br>别再跟空气签合同。</span>
+  </div>
+</div>
+</body>
+</html>

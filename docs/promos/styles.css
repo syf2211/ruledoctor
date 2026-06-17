@@ -1,0 +1,126 @@
+/* ===== RuleDoctor / 规则体检 — 宣传物料共享样式 ===== */
+:root{
+  --bg:#0B0E14;
+  --bg2:#11151F;
+  --card:#161C2B;
+  --card2:#1E2640;
+  --line:#263049;
+  --text:#FFFFFF;
+  --muted:#9AA7BD;
+  --dim:#6B7790;
+  --red:#FF453A;
+  --red-soft:rgba(255,69,58,.14);
+  --green:#30D158;
+  --green-soft:rgba(48,209,88,.14);
+  --yellow:#FFD60A;
+  --yellow-soft:rgba(255,214,10,.14);
+  --orange:#FF9F0A;
+  --accent:#5E5CE6;
+  --pink:#FF2D55;
+  --grad:linear-gradient(135deg,#5E5CE6 0%,#BF5AF0 50%,#FF2D55 100%);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  color:var(--text);
+  background:#000;
+}
+/* 每张画布:精确尺寸,浏览器截图即成品 */
+.canvas{
+  width:1080px;height:1440px;
+  background:var(--bg);
+  position:relative;overflow:hidden;
+  padding:88px 80px;
+  display:flex;flex-direction:column;
+}
+.canvas.banner{width:1600px;height:640px;padding:0;}
+
+/* 顶部标签 */
+.tag{
+  display:inline-flex;align-items:center;gap:12px;
+  font-size:26px;font-weight:600;color:var(--muted);
+  letter-spacing:.5px;
+}
+.tag .dot{width:12px;height:12px;border-radius:50%;background:var(--pink);box-shadow:0 0 16px var(--pink);}
+.pill{
+  display:inline-block;font-size:24px;font-weight:700;
+  padding:10px 22px;border-radius:999px;
+  background:var(--card2);color:#fff;border:1px solid var(--line);
+  letter-spacing:.5px;
+}
+
+/* 品牌锁 */
+.brand{
+  display:flex;align-items:center;gap:16px;
+}
+.brand .logo{
+  width:64px;height:64px;border-radius:18px;background:var(--grad);
+  display:flex;align-items:center;justify-content:center;
+  font-size:34px;font-weight:900;color:#fff;
+  box-shadow:0 12px 40px rgba(94,92,230,.45);
+}
+.brand .name{font-size:40px;font-weight:900;letter-spacing:.5px;}
+.brand .sub{font-size:22px;color:var(--muted);font-weight:500;margin-top:2px;}
+
+/* 巨型标题 */
+.h-mega{font-size:118px;font-weight:900;line-height:1.04;letter-spacing:-2px;}
+.h-mega .em{color:var(--red);position:relative;}
+.h-mega .em::after{
+  content:"";position:absolute;left:0;right:0;bottom:6px;height:10px;
+  background:var(--red);opacity:.22;border-radius:4px;
+}
+.h-big{font-size:64px;font-weight:900;line-height:1.12;letter-spacing:-1px;}
+.h-mid{font-size:42px;font-weight:800;line-height:1.2;}
+.lead{font-size:30px;color:var(--muted);font-weight:500;line-height:1.5;}
+
+/* 规则状态行(三色灯) */
+.ruleline{
+  display:flex;align-items:center;gap:22px;
+  background:var(--card);border:1px solid var(--line);
+  border-radius:20px;padding:26px 30px;margin-bottom:20px;
+}
+.lamp{width:26px;height:26px;border-radius:50%;flex:none;position:relative;}
+.lamp.g{background:var(--green);box-shadow:0 0 18px var(--green);}
+.lamp.y{background:var(--yellow);box-shadow:0 0 18px var(--yellow);}
+.lamp.r{background:var(--red);box-shadow:0 0 18px var(--red);}
+.ruleline .txt{font-size:30px;font-weight:700;flex:1;}
+.ruleline .txt small{display:block;font-size:22px;font-weight:500;color:var(--muted);margin-top:4px;}
+.ruleline .pct{font-size:30px;font-weight:900;font-variant-numeric:tabular-nums;}
+
+/* 卡片通用 */
+.card{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:26px;padding:40px;
+}
+
+/* 数据钩子条 */
+.hookbar{
+  background:var(--grad);border-radius:26px;padding:40px 44px;
+  display:flex;align-items:center;gap:30px;
+}
+.hookbar .num{font-size:108px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums;}
+.hookbar .lbl{font-size:30px;font-weight:600;line-height:1.35;}
+
+/* 步骤卡 */
+.step{
+  display:flex;gap:30px;align-items:flex-start;
+  background:var(--card);border:1px solid var(--line);border-radius:24px;padding:36px;
+}
+.step .n{
+  width:64px;height:64px;border-radius:18px;flex:none;
+  background:var(--card2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  font-size:34px;font-weight:900;color:var(--accent);
+}
+.step .t{font-size:32px;font-weight:800;margin-bottom:8px;}
+.step .d{font-size:25px;color:var(--muted);line-height:1.5;}
+
+/* 底部脚 */
+.foot{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;}
+.foot .src{font-size:22px;color:var(--dim);}
+.cta{
+  display:inline-flex;align-items:center;gap:14px;
+  background:#fff;color:#0B0E14;font-size:30px;font-weight:800;
+  padding:24px 40px;border-radius:18px;
+}
