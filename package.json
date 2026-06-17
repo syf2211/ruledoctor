@@ -48,6 +48,8 @@
     "demo:html": "npm run build && node dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl --format html --out docs/demo-report.html",
     "demo:video": "node docs/record-demo-video.mjs && python3 -c \"import imageio_ffmpeg,subprocess,sys; ff=imageio_ffmpeg.get_ffmpeg_exe(); subprocess.check_call([ff,'-y','-i','docs/demo-walkthrough.webm','-c:v','libx264','-pix_fmt','yuv420p','-movflags','+faststart','docs/demo-walkthrough.mp4'])\"",
     "setup:here": "npm run build && node dist/index.js setup -p .",
+    "sync:skill": "mkdir -p skills/ruledoctor/scripts plugin/scripts && cp scripts/*.mjs skills/ruledoctor/scripts/ && cp scripts/*.mjs plugin/scripts/",
+    "postinstall": "node scripts/postinstall.mjs",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {

@@ -37,8 +37,34 @@ function discoverRules(cwd) {
   return chunks.join("\n\n");
 }
 
+function loadRulesAnchor() {
+  const candidates = [];
+  if (process.env.RULEDOCTOR_SKILL_ROOT) {
+    candidates.push(resolve(process.env.RULEDOCTOR_SKILL_ROOT, "rules-anchor.md"));
+  }
+  const home = process.env.HOME;
+  if (home) {
+    candidates.push(resolve(home, ".claude/skills/ruledoctor/rules-anchor.md"));
+  }
+  for (const p of candidates) {
+    if (!existsSync(p)) continue;
+    try {
+      return readFileSync(p, "utf8").trim();
+    } catch {
+      /* ignore */
+    }
+  }
+  return null;
+}
+
 function buildContext(cwd) {
-  const body = discoverRules(cwd);
+  let body = discoverRules(cwd);
+  if (!body) {
+    const anchor = loadRulesAnchor();
+    if (anchor) {
+      body = `## rules-anchor.md (RuleDoctor 默认)\n${anchor}`;
+    }
+  }
   if (!body) {
     return "RuleDoctor: 本项目未发现 CLAUDE.md / AGENTS.md / .cursorrules。请运行 `ruledoctor setup -p .` 生成规则文件。";
   }

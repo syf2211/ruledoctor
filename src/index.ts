@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import { Command } from "commander";
+import { spawnSync } from "node:child_process";
 import { writeFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, resolve, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { parseRulesFile, discoverRuleFiles, fileLabel } from "./rules.js";
 import { buildCorpus, discoverSessionFiles, scoreReadRate } from "./readRate.js";
 import { loadConfig, runChecks } from "./compliance.js";
@@ -11,6 +13,7 @@ import { findLatestSessionForProject, listSessionsForProject } from "./sessionSo
 import { basename } from "node:path";
 
 const VERSION = "0.1.0";
+const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const program = new Command();
 
@@ -80,6 +83,11 @@ program
   .description("查看本项目能被 RuleDoctor 找到的会话（Claude / Codex / Cursor）")
   .option("-p, --project <dir>", "project root", process.cwd())
   .action((opts) => doctorCmd(resolve(opts.project)));
+
+program
+  .command("bootstrap-skill")
+  .description("从 npm 包内 skills/ruledoctor 安装用户级 Claude/Cursor hooks（同 bootstrap.mjs）")
+  .action(() => bootstrapSkillCmd());
 
 interface CheckOpts {
   rules: string;
@@ -286,6 +294,16 @@ function inventoryCmd(opts: { cwd: string; rules: string; config?: string; forma
   console.log("  【当前版本不会自动扫描的来源】");
   for (const x of NOT_SCANNED) console.log(`    · ${x}`);
   console.log("\n  详见: docs/使用说明.md\n");
+}
+
+function bootstrapSkillCmd() {
+  const bootstrap = join(PKG_ROOT, "skills", "ruledoctor", "scripts", "bootstrap.mjs");
+  if (!existsSync(bootstrap)) {
+    console.error(`\n  ✗ 未找到 ${bootstrap}。在源码仓请先运行: npm run sync:skill\n`);
+    process.exit(2);
+  }
+  const r = spawnSync(process.execPath, [bootstrap], { stdio: "inherit" });
+  process.exit(r.status === null ? 1 : r.status);
 }
 
 function doctorCmd(cwd: string) {

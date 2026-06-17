@@ -1,102 +1,54 @@
 ---
 name: ruledoctor
 description: >-
-  Enforces and audits project coding rules (CLAUDE.md, AGENTS.md, .cursorrules) for Claude Code, Codex, and Cursor.
-  Re-injects rules after context compaction, blocks forbidden shell commands via hooks, and runs offline read-rate/compliance
-  reports from session logs. Use when the user mentions rules, CLAUDE.md, compliance, compaction, context loss, RuleDoctor,
-  规则体检, 遵守规则, or wants the agent to follow team standards after long sessions.
+  Enforces project coding rules after context compaction and blocks forbidden shell commands via user hooks.
+  On first use run bootstrap (node .../bootstrap.mjs or ruledoctor bootstrap-skill) then ruledoctor setup -p .
+  Use in every coding session when CLAUDE.md, AGENTS.md, .cursorrules, RuleDoctor, 规则, compaction, or compliance matters.
 ---
 
-# RuleDoctor（规则体检 + 强制遵守）
+# RuleDoctor（装上就要真管用）
 
-## 卖点（对用户怎么说）
-
-1. **不只事后打分**：Hook 在 **compaction / 新会话** 时把规则重新写回上下文，解决「聊久了忘了 CLAUDE.md」。
-2. **能拦就拦**：`.ruledoctor.json` 里配置的 **forbid-command** 会在执行 `git push --force` 等命令前被 **PreToolUse / beforeShellExecution** 拒绝。
-3. **可证明**：会话 jsonl 离线扫描 **读到率**；配置了 checker 才有 **遵守率**（见 `.ruledoctor/last-report.html`）。
-
-## 安装（任选一种）
-
-### A. CC Switch（推荐，Claude + Codex 一键）
-
-CC Switch **不会**爬整个 GitHub。它只扫描：
-
-- 内置/你添加的 **技能仓库**（`owner/name` + 可选 `branch`、`subdirectory`）
-- **skills.sh** 公共索引（在「仓库管理」里搜）
-- 你手动「添加仓库」后的目录
-
-**添加本仓库：**
-
-1. CC Switch → Skills → 仓库管理 → 添加仓库  
-   - Owner: `syf2211`  
-   - Name: `ruledoctor`  
-   - Branch: `main`  
-   - Subdirectory: `skills`（下面有 `ruledoctor/` 文件夹）  
-2. 刷新 → 安装 **ruledoctor** 技能  
-3. 安装会同步到 `~/.claude/skills/ruledoctor/` 与 `~/.codex/skills/ruledoctor/`（取决于你在 CC Switch 里选的应用）
-
-**一键添加仓库（深链接，在已安装 CC Switch 的 Mac 上打开）：**
-
-```
-ccswitch://v1/import?resource=skill&app=claude&name=ruledoctor&repo=syf2211/ruledoctor&directory=skills&branch=main
-```
-
-Codex 把 `app=codex` 再开一次即可。
-
-### B. Claude Code 插件（含 Hooks）
+## 安装后 30 秒内必做（Agent 替用户执行，不要只口头说）
 
 ```bash
-claude plugin marketplace add syf2211/ruledoctor
-# 或本地：/plugin install ruledoctor@<path-to-repo>/plugin
+node ~/.claude/skills/ruledoctor/scripts/bootstrap.mjs
+# 或已装 CLI：ruledoctor bootstrap-skill
+cd "<项目根>" && ruledoctor setup -p .
 ```
 
-### C. Cursor
+- **bootstrap**：把 reinject / rule-guard / session-end 写进 `~/.claude/settings.json` 与 `~/.cursor/hooks.json`（一次即可，幂等）。
+- **setup**：在当前项目生成规则 + `.ruledoctor.json` + 项目级 Hook。
 
-复制或软链到项目：
+若用户刚从 CC Switch 安装本 Skill、尚未 bootstrap：**本会话第一件事**就是跑上面两条，再写代码。
 
-```bash
-mkdir -p .cursor/skills
-cp -R path/to/ruledoctor/skills/ruledoctor .cursor/skills/ruledoctor
-```
+## 装上之后实际发生什么（不是文档）
 
-并在项目跑：`ruledoctor setup -p .`（写入 `.cursor/hooks.json`）。
+| 时机 | 行为 |
+|------|------|
+| 每次 SessionStart / compaction 前 | `reinject-rules.mjs` 把 `CLAUDE.md`（或 skill 内置 `rules-anchor.md`）塞回 `additionalContext` |
+| 每次 Bash / shell | `rule-guard.mjs` 拒绝 `push --force` / `push -f` 及 `.ruledoctor.json` 里的 forbid-command |
+| 会话结束 | `session-end.mjs` 跑体检 → `.ruledoctor/last-report.html` |
 
-### D. npm CLI
+## Agent 硬性要求（本 Skill 生效时）
 
-```bash
-npm i -g ruledoctor
-ruledoctor setup -p /your/project
-```
+1. 未 bootstrap → **先 bootstrap**，未 setup → **先 setup**，再动代码。
+2. Hook 拒绝命令 → 换安全做法，**不得**换写法绕过（例如 `git push -f` 改别名）。
+3. compaction / 长会话后 → 主动 Read `CLAUDE.md`；若用户抱怨忘了规则 → 确认 PreCompact hook 已装。
+4. 任务结束前 → 无报告则 `ruledoctor --cwd . --last-session` 并摘要违规项。
 
-## 项目内必做（Agent 帮用户执行）
+## CC Switch
 
-在用户**项目根**（不是 ruledoctor 源码仓）运行：
+添加 `syf2211/ruledoctor`，子目录 `skills`，安装 **ruledoctor**（必须含 `scripts/` 与 `rules-anchor.md`）。
 
-```bash
-ruledoctor setup -p .
-```
+`ccswitch://v1/import?resource=skill&app=claude&name=ruledoctor&repo=syf2211/ruledoctor&directory=skills&branch=main`
 
-这会生成/保留规则文件、`.ruledoctor.json`，并安装：
-
-- SessionEnd / sessionEnd → 自动 HTML 报告  
-- SessionStart + **PreCompact** → `reinject-rules.mjs`（抗压缩）  
-- PreToolUse Bash + beforeShellExecution → `rule-guard.mjs`（强制拦截）
-
-## Agent 必须遵守的行为（装上本 Skill 后）
-
-1. **会话开始或用户提到 compaction/上下文丢了**：确认项目已 `setup`；必要时 Read `CLAUDE.md` 与 `.ruledoctor.json`。
-2. **每次准备跑破坏性 git / 部署命令**：对照 `.ruledoctor.json`；Hook 拒绝时向用户解释并给安全替代方案。
-3. **长任务结束前**：若 Hook 未触发，主动运行 `ruledoctor --cwd . --last-session` 并摘要红灯规则。
-4. **规则与用户指令冲突**：先说明冲突，再执行；不要静默违反 `CLAUDE.md` 硬性条目。
-
-## 文件位置
+## 文件
 
 | 路径 | 作用 |
 |------|------|
-| `CLAUDE.md` / `AGENTS.md` / `.cursorrules` | 规则来源（明文） |
-| `.ruledoctor.json` | 可执行的遵守检查（forbid-command 等） |
-| `.ruledoctor/last-report.html` | 最近一次体检 |
-| 仓库 `scripts/reinject-rules.mjs` | compaction 后重新注入 |
-| 仓库 `scripts/rule-guard.mjs` | 命令拦截 |
+| `scripts/bootstrap.mjs` | 用户级 Hook 安装 |
+| `scripts/reinject-rules.mjs` | 抗 compaction |
+| `scripts/rule-guard.mjs` | 强制拦截 |
+| `rules-anchor.md` | 无项目规则时的默认硬规则 |
 
-详细说明：`docs/使用说明.md`、`docs/CC-Switch-技能分发.md`。
+更多：`docs/CC-Switch-技能分发.md`、`docs/使用说明.md`。

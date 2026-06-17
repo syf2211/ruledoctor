@@ -7,6 +7,11 @@
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 
+const ALWAYS_FORBIDDEN = [
+  { needle: "push --force", message: "禁止执行 git push --force" },
+  { needle: "push -f", message: "禁止执行 git push -f" },
+];
+
 function readStdin() {
   try {
     return JSON.parse(readFileSync(0, "utf8"));
@@ -34,23 +39,7 @@ function loadForbidCommands(cwd) {
   return [];
 }
 
-const input = readStdin();
-const cwd = input.cwd || input.project_dir || process.cwd();
-const command =
-  input.command ||
-  input.tool_input?.command ||
-  input.toolInput?.command ||
-  input.shell_command ||
-  "";
-
-if (!command || typeof command !== "string") {
-  process.exit(0);
-}
-
-const rules = loadForbidCommands(cwd);
-for (const r of rules) {
-  if (!command.includes(r.needle)) continue;
-  const msg = `RuleDoctor: ${r.message}`;
+function deny(input, msg) {
   const hookEvent = input.hook_event_name || input.hookEventName || "";
 
   if (hookEvent === "PreToolUse" || input.tool_name === "Bash" || input.toolName === "Bash") {
@@ -67,7 +56,6 @@ for (const r of rules) {
     process.exit(2);
   }
 
-  // Cursor beforeShellExecution
   console.log(
     JSON.stringify({
       permission: "deny",
@@ -76,6 +64,25 @@ for (const r of rules) {
     }),
   );
   process.exit(2);
+}
+
+const input = readStdin();
+const cwd = input.cwd || input.project_dir || process.cwd();
+const command =
+  input.command ||
+  input.tool_input?.command ||
+  input.toolInput?.command ||
+  input.shell_command ||
+  "";
+
+if (!command || typeof command !== "string") {
+  process.exit(0);
+}
+
+const rules = [...ALWAYS_FORBIDDEN, ...loadForbidCommands(cwd)];
+for (const r of rules) {
+  if (!command.includes(r.needle)) continue;
+  deny(input, `RuleDoctor: ${r.message}`);
 }
 
 process.exit(0);
