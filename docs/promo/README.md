@@ -31,6 +31,7 @@ node docs/promos/export-png.mjs
 ## 文案
 
 - `docs/promo/copy/平台文案.md` — 小红书 / 知乎 / X / 社区帖  
+- `docs/promo/copy/小红书首发稿.md` — 首发标题、正文、置顶评论、话题与配图顺序
 - `docs/promo/小红书自动发布方案.md` — MCP 与自动化调研  
 - `POST.md` — 短帖索引（指向上文）
 

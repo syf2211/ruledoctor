@@ -2,6 +2,8 @@
 
 完整多平台文案：**[docs/promo/copy/平台文案.md](docs/promo/copy/平台文案.md)**
 
+小红书首发稿：**[docs/promo/copy/小红书首发稿.md](docs/promo/copy/小红书首发稿.md)**
+
 小红书轮播图：**`docs/promo/xhs/slide-01.png` … `slide-07.png`**
 
 重新导出图片：
