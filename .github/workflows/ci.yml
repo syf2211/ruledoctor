@@ -18,6 +18,7 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run validate:skill
+      - run: npm run smoke:skill-install
       - run: npm run build
       # smoke-test the built CLI on the bundled demo
       - run: node dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl --format json
