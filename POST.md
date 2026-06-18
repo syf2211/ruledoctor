@@ -1,57 +1,58 @@
-# RuleDoctor 发帖文案包（小红书 / 掘金）
+# RuleDoctor 发帖文案包（Skill 优先）
 
-配图顺序：`docs/01-cover.png` → `docs/02-problem.png` → `docs/03-dashboard.png` → `docs/04-solution.png`
+完整渠道与节奏：[宣发与分发.md](docs/宣发与分发.md)
 
----
-
-## 标题（三选一）
-
-1. 🆘 救命，你给 AI 写的规则，它可能根本没在听
-2. 实测 37% 的 .cursorrules 规则，AI 压根没读到 😱
-3. 别再跟空气签合同了！你的 Claude Code 规则可能全失效
-
----
-
-## 正文骨架
-
-你是不是也写过一长串 `.cursorrules` / `CLAUDE.md`，结果 AI 照样乱改、照样 `git push --force`、照样不用你规定的格式？
-
-更气人的是：**它不报错**。你只能怀疑「模型是不是变蠢了」——其实可能是规则根本没进上下文，或者被 compaction 挤掉了，或者它看到了但选择性无视。
-
-（配图 02：三种死法）
-
-我做了个开源 CLI **RuleDoctor**：像给代码做覆盖率一样，给 **AI 规则做覆盖率**。
-
-- **读到率**：扫 Claude Code 会话日志，看规则关键词有没有真的出现在发给模型的上下文里
-- **遵守率**：用你配置的 checker 查仓库和命令历史（例如禁止 `git push --force`）
-
-（配图 03：仪表盘 demo，37/100 那张最有冲击力）
-
-用法就三步：（配图 04）
-
-1. 指向你的规则文件（`.cursorrules` / `CLAUDE.md` / `AGENTS.md`）
-2. 指向一次真实会话的 `.jsonl`
-3. 出报告，还能 `--gate` 卡 CI
+**推荐安装（计入 skills.sh）：**
 
 ```bash
-git clone https://github.com/syf2211/ruledoctor.git
-cd ruledoctor && npm install && npm run build
-./dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl
+npx skills add syf2211/ruledoctor@ruledoctor -g -y
 ```
 
-和市面上那些「静态 rules linter」不一样：它们只检查你**写得对不对**；RuleDoctor 查这次任务里**到底有没有被读到、有没有被遵守**。
-
-⭐ 觉得有用的话 GitHub 点个 star，/issue 欢迎提你想要的 checker！
+配图建议：新对话「读了哪些文件 + 3 条硬约束」截图 · skills.sh 页面 · （可选）拒绝 force push
 
 ---
 
-## 标签建议
+## 小红书 / 短帖标题
 
-`#Cursor` `#ClaudeCode` `#AI编程` `#程序员日常` `#开源` `#前端开发` `#提效工具` `#VibeCoding`
+1. Claude 又不看 .cursorrules？装这个 Skill 再**新开对话**
+2. 写了 CLAUDE.md 还是乱改？一个 Skill 让它先读规则再动手
+3. 上下文一压缩就忘规矩？RuleDoctor Skill + required_reads
+
+---
+
+## 掘金 / CSDN 标题
+
+【开源 Skill】RuleDoctor：让 Claude/Codex/Cursor 先读 CLAUDE.md 与 required_reads
+
+---
+
+## 正文骨架（Skill 版）
+
+你是不是也写过 `CLAUDE.md` / `.cursorrules`，结果 Agent 照样乱改、照样 `git push --force`？
+
+**RuleDoctor** 是一个可安装的 **Agent Skill**（不是只能自己跑的脚本）：
+
+- 开场先 **Read** 根规则 + 你在 `.ruledoctor.json` 里列的 **必读文档**（`required_reads`）
+- **默认**只告诉你：读了哪些文件 + **最多 3 条**硬约束（避免长篇念经）
+- 可选：同仓库 CLI 做事后体检、Hook 硬拦危险 shell
+
+```bash
+npx skills add syf2211/ruledoctor@ruledoctor -g -y
+```
+
+装好后务必 **新开一场对话**，在有规则文件的项目里试一个小需求。
+
+⭐ https://github.com/syf2211/ruledoctor · https://skills.sh/syf2211/ruledoctor/ruledoctor
+
+---
+
+## 标签
+
+`#ClaudeCode` `#Cursor` `#Codex` `#AgentSkills` `#AI编程` `#开源` `#VibeCoding`
 
 ---
 
 ## 备注
 
-- 读率目前以 **Claude Code** 会话格式为主；Cursor/Cline 适配在 roadmap。
-- 读到率证明「规则文本到达了上下文」，不是 100% 证明「模型理解了」；探针模式 `--probe` 规划中。
+- 旧版 CLI-only 叙事见 git 历史；对外统一 **Skill 为主、CLI 可选**。
+- `docs/0x-*.png` 若不存在，发帖前请先截 2–3 张实机图放入 `docs/promo/`。

@@ -1,8 +1,16 @@
 <p align="center">
+  <a href="https://skills.sh/syf2211/ruledoctor"><img src="https://skills.sh/b/syf2211/ruledoctor" alt="skills.sh" /></a>
+</p>
+
+<p align="center">
   <img src="github-banner.png" alt="RuleDoctor" width="880" />
 </p>
 
 <h3 align="center">Agent Skill：让助手先读项目规则，再改代码</h3>
+
+<p align="center">
+  <strong>一句话：</strong>装了 Skill、新开对话后，助手会先 Read <code>CLAUDE.md</code> / <code>.cursorrules</code> / 你配置的必读清单，再改仓库。
+</p>
 
 <p align="center">
   <strong>核心产物：</strong> <code>skills/ruledoctor/SKILL.md</code> — 复制一个文件夹即可安装。<br/>
@@ -16,7 +24,7 @@
   ·
   <a href="docs/Hook是什么.md">Hook 是什么？</a>
   ·
-  <a href="https://github.com/syf2211/ruledoctor/tree/main/skills/ruledoctor">只看 Skill 目录</a>
+  <a href="https://skills.sh/syf2211/ruledoctor/ruledoctor">skills.sh 页面</a>
 </p>
 
 <p align="center">
@@ -40,14 +48,14 @@
 ## 安装（30 秒）
 
 ```bash
+npx skills add syf2211/ruledoctor@ruledoctor -g -y
+```
+
+```bash
 git clone https://github.com/syf2211/ruledoctor.git
 cp -R ruledoctor/skills/ruledoctor ~/.claude/skills/
 cp -R ruledoctor/skills/ruledoctor ~/.codex/skills/
 # Cursor → ~/.cursor/skills/ 或项目 .cursor/skills/
-```
-
-```bash
-npx skills add syf2211/ruledoctor --skill ruledoctor -g -y
 ```
 
 **新开对话**，在有规则文件的项目里试一个小任务。  
@@ -92,6 +100,19 @@ node dist/index.js setup -p /path/to/your-project
 ```
 
 详见 [Hook 是什么？](docs/Hook是什么.md) · [用户指南](docs/用户指南.md)。
+
+---
+
+## 典型场景
+
+| 场景 | 助手应表现 |
+|------|------------|
+| 项目有 `CLAUDE.md` | 先报读了哪些文件 + ≤3 条硬约束，再改代码 |
+| 规范在 `docs/` 深处 | 配置 `required_reads` 后会 Read，不扫全库 |
+| 上下文被压缩 | 重新 Read 并简短汇报 |
+| 要求 force push | 拒绝（硬拦需可选 Hook） |
+
+截图与宣发清单：[docs/宣发与分发.md](docs/宣发与分发.md)
 
 ---
 
