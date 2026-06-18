@@ -43,6 +43,12 @@ test("forbid-command fails when the command was run", async () => {
   assert.equal(results.find((r) => r.ruleId === "R3")!.status, "fail");
 });
 
+test("forbid-command detects force flag after refspec", async () => {
+  const checks: Check[] = [{ rule: "any 类型", type: "forbid-command", command: "push --force" }];
+  const { results } = await runChecks(rules, checks, fixtures, "tool command: git push origin main --force");
+  assert.equal(results.find((r) => r.ruleId === "R3")!.status, "fail");
+});
+
 test("forbid-command passes when the command was not run", async () => {
   const checks: Check[] = [{ rule: "any 类型", type: "forbid-command", command: "rm -rf" }];
   const { results } = await runChecks(rules, checks, fixtures, "nothing dangerous here");

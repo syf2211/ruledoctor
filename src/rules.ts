@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
-import { basename, resolve } from "node:path";
+import { readFileSync, realpathSync } from "node:fs";
+import { basename, isAbsolute, relative, resolve } from "node:path";
 import fg from "fast-glob";
 import type { Rule } from "./types.js";
 
@@ -19,6 +19,11 @@ export function parseRulesFile(absPath: string): Rule[] {
   const raw = readFileSync(absPath, "utf8");
   const rules = parseRulesText(raw, absPath);
   return assignIds(rules);
+}
+
+export function parseRuleFiles(absPaths: string[]): Rule[] {
+  const seeds = absPaths.flatMap((absPath) => parseRulesText(readFileSync(absPath, "utf8"), absPath));
+  return assignIds(seeds);
 }
 
 export function parseRulesText(raw: string, source: string): RuleSeed[] {
@@ -116,13 +121,31 @@ export const ROOT_RULE_CANDIDATES = [
   ".github/copilot-instructions.md",
 ] as const;
 
+function realpathOrResolve(path: string): string {
+  try {
+    return realpathSync.native(path);
+  } catch {
+    return resolve(path);
+  }
+}
+
+function isInsideDir(parent: string, child: string): boolean {
+  const rel = relative(parent, child);
+  return rel === "" || (!!rel && !rel.startsWith("..") && !isAbsolute(rel));
+}
+
 export function resolveRequiredReadPaths(cwd: string, relPaths: string[], exists: (p: string) => boolean): string[] {
   const out: string[] = [];
+  const root = resolve(cwd);
+  const realRoot = realpathOrResolve(root);
   for (const rel of relPaths) {
     const trimmed = rel.trim();
     if (!trimmed) continue;
-    const p = resolve(cwd, trimmed);
-    if (exists(p)) out.push(p);
+    if (trimmed.includes("\0") || isAbsolute(trimmed)) continue;
+    const p = resolve(root, trimmed);
+    if (!isInsideDir(root, p) || !exists(p)) continue;
+    const real = realpathOrResolve(p);
+    if (isInsideDir(realRoot, real)) out.push(real);
   }
   return out;
 }
@@ -136,15 +159,21 @@ export function discoverRuleFiles(
   opts?: { requiredReads?: string[] },
 ): string[] {
   const cwd = resolve(dir);
+  const realCwd = realpathOrResolve(cwd);
   const found = new Set<string>();
+  const addIfSafe = (p: string) => {
+    if (!exists(p)) return;
+    const real = realpathOrResolve(p);
+    if (isInsideDir(realCwd, real)) found.add(real);
+  };
 
   for (const c of ROOT_RULE_CANDIDATES) {
     const p = resolve(cwd, c);
-    if (exists(p)) found.add(p);
+    addIfSafe(p);
   }
 
   const cursorRules = fg.sync(`${cwd}/.cursor/rules/*.{md,mdc}`, { onlyFiles: true, absolute: true });
-  for (const p of cursorRules) found.add(p);
+  for (const p of cursorRules) addIfSafe(p);
 
   if (opts?.requiredReads?.length) {
     for (const p of resolveRequiredReadPaths(cwd, opts.requiredReads, exists)) found.add(p);

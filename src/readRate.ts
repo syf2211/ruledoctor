@@ -206,12 +206,7 @@ export async function discoverSessionFiles(arg: string | undefined, cwd: string)
   // default: ~/.claude/projects/<encoded-cwd>/*.jsonl
   const projectsDir = `${homedir()}/.claude/projects`;
   const encoded = cwd.replace(/[\/\\:]+/g, "-").replace(/^-+/, "");
-  let files = await fg(`${projectsDir}/${encoded}/*.jsonl`, { onlyFiles: true });
-  if (files.length === 0) {
-    // fall back to every project log (caller can warn it's broad)
-    files = await fg(`${projectsDir}/**/*.jsonl`, { onlyFiles: true });
-  }
-  return files.sort();
+  return (await fg(`${projectsDir}/${encoded}/*.jsonl`, { onlyFiles: true })).sort();
 }
 
 /** Newest session log for a project cwd (by mtime). Claude, Codex, or Cursor. */

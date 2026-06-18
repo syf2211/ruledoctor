@@ -1,6 +1,6 @@
 # Skills in this repository
 
-**Install one folder:** [`ruledoctor/`](./ruledoctor/) → copy to `~/.claude/skills/` (see [ruledoctor/README.md](./ruledoctor/README.md)).
+**Install one folder:** [`ruledoctor/`](./ruledoctor/) → copy to `~/.claude/skills/`, `~/.codex/skills/`, or `~/.cursor/skills/`.
 
 | Skill | Description |
 |-------|-------------|

@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { writeFileSync, existsSync } from "node:fs";
 import { dirname, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseRulesFile, discoverRuleFiles, fileLabel } from "./rules.js";
+import { parseRuleFiles, discoverRuleFiles, fileLabel } from "./rules.js";
 import { buildCorpus, discoverSessionFiles, scoreReadRate } from "./readRate.js";
 import { loadConfig, runChecks } from "./compliance.js";
 import { buildReport, renderHTML, renderJSON, renderTerminal } from "./report.js";
@@ -54,7 +54,17 @@ program
   .option("--rules <paths>", "comma-separated rules file(s)", "")
   .option("--config <path>", ".ruledoctor.json path (default: auto-detect)")
   .option("--format <fmt>", "terminal | json", "terminal")
-  .action((opts) => inventoryCmd({ ...opts, cwd: opts.project }));
+  .action((opts, command) => {
+    const parent = command.parent?.opts() ?? {};
+    const option = (key: "rules" | "config" | "format") =>
+      command.getOptionValueSource(key) === "default" && parent[key] !== undefined ? parent[key] : opts[key];
+    inventoryCmd({
+      cwd: opts.project,
+      rules: option("rules"),
+      config: option("config"),
+      format: option("format"),
+    });
+  });
 
 program
   .command("setup")
@@ -114,7 +124,7 @@ async function runCheck(opts: CheckOpts) {
       `No rules file found in ${cwd}. Pass --rules <file> or add a CLAUDE.md / AGENTS.md / .cursorrules.`,
     );
   }
-  const rules = ruleFiles.flatMap((f) => parseRulesFile(f));
+  const rules = parseRuleFiles(ruleFiles);
   if (rules.length === 0) {
     throw new Error(`Parsed 0 rules from ${ruleFiles.join(", ")}. Make sure there are list items or sentences.`);
   }
@@ -212,7 +222,7 @@ const TEMPLATE = `{
       "rule": "git push --force",
       "type": "forbid-command",
       "command": "push --force",
-      "message": "会话中出现了被禁止的 force push"
+      "message": "会话中出现了被禁止的 force push（含 -f / --force-with-lease）"
     }
   ]
 }
@@ -242,7 +252,7 @@ function inventoryCmd(opts: { cwd: string; rules: string; config?: string; forma
   const ruleFiles = opts.rules
     ? opts.rules.split(",").map((s) => s.trim()).filter(Boolean).map((p) => resolve(p))
     : discoverRuleFiles(cwd, (p) => existsSync(p), { requiredReads: config.required_reads });
-  const rules = ruleFiles.flatMap((f) => parseRulesFile(f));
+  const rules = parseRuleFiles(ruleFiles);
 
   const checkerForRule = (text: string): string | null => {
     for (const c of config.checks) {

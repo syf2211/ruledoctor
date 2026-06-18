@@ -53,7 +53,7 @@ flowchart TB
 | **系统 Prompt / 用户 Rules** | 每次对话底层带上 | 全局习惯、IDE 规则 | 否，靠模型遵守 |
 | **项目规则文件**（`CLAUDE.md`、`.cursor/rules` 等） | 模型 + 你 | 项目约定条文 | 否 |
 | **Skill**（`skills/ruledoctor/SKILL.md`） | 模型在匹配场景时读 | 何时 Read 规则、怎么开场、口头拒绝 | **软**：不执行 ≠ 宿主拦截 |
-| **Hook** | **宿主**在节点上跑脚本 | 注入上下文、拦命令、结束出报告 | **部分硬**：仅宿主支持的动作（如 deny Bash） |
+| **Hook** | **宿主**在节点上跑脚本 | 注入上下文、拦命令、CLI 可用时出报告 | **部分硬**：仅宿主支持的动作（如 deny Bash） |
 | **CLI `ruledoctor`** | 你在终端跑 | 用 jsonl **事后**算读到率、配置的 checker | 否（审计） |
 
 **一句话：** Skill 教 Agent **怎么想、怎么说**；Hook 在少数节点上 **替宿主做决定**；CLI 在会话结束后 **用日志算账**。
@@ -87,7 +87,7 @@ flowchart TB
 
 | 例子 | RuleDoctor 怎么做 |
 |------|-------------------|
-| 禁止 `git push --force` | `rule-guard.mjs` 默认拦；也可在 `.ruledoctor.json` 里加 `forbid-command` |
+| 禁止 force push | `rule-guard.mjs` 默认拦 `git push` 中任意位置的 `--force` / `-f` / `--force-with-lease`；也可在 `.ruledoctor.json` 里加 `forbid-command` |
 | 禁止 `rm -rf /` | 同上（子串匹配） |
 | 禁止 `curl … \| bash` | 在 `checks` 里配 `forbid-command` |
 
@@ -124,7 +124,7 @@ flowchart TB
 |----|----------|----------|
 | **Hook · rule-guard** | 将要执行 `git push -f` | **拦截**：Bash 不跑，返回拒绝理由 |
 | **Hook · reinject** | （无「违规」概念） | **提醒/补上下文**：注入规则摘要，对话继续 |
-| **Hook · session-end** | （无实时违规） | **记录/展示**：生成报告，终端 `systemMessage` 摘要 |
+| **Hook · session-end** | （无实时违规） | **记录/展示**：CLI 可用时生成报告，终端 `systemMessage` 摘要 |
 | **Skill** | 用户要求 force push | 模型应 **拒绝并说明**（软，取决于模型） |
 | **CLI** | transcript 里出现过 forbid 子串 | 报告里该条 **fail**（事后，拦不住已发生的） |
 
@@ -143,7 +143,7 @@ flowchart TB
 | 不确定要声明 | ✅ 主 | ❌ | ❌ |
 
 **只装 Skill、不装 Hook：** 多数抽象行为靠模型自觉；危险命令可能被模型拒绝，也可能不会。  
-**Skill + Hook（`ruledoctor setup`）：** 危险 shell 多一道宿主拦截；长对话有 reinject；结束自动体检（可选）。  
+**Skill + Hook（`ruledoctor setup`）：** 危险 shell 多一道宿主拦截；长对话有 reinject；CLI 可用时结束自动体检（可选）。
 **CLI：** 给自己看，不改变下一场对话行为。
 
 ---

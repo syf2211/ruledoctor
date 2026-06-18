@@ -6,10 +6,10 @@
  */
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
+import { matchesForbiddenCommand } from "./command-match.mjs";
 
 const ALWAYS_FORBIDDEN = [
-  { needle: "push --force", message: "禁止执行 git push --force" },
-  { needle: "push -f", message: "禁止执行 git push -f" },
+  { needle: "push --force", message: "禁止执行 force push（--force / -f / --force-with-lease）" },
 ];
 
 function readStdin() {
@@ -81,7 +81,7 @@ if (!command || typeof command !== "string") {
 
 const rules = [...ALWAYS_FORBIDDEN, ...loadForbidCommands(cwd)];
 for (const r of rules) {
-  if (!command.includes(r.needle)) continue;
+  if (!matchesForbiddenCommand(command, r.needle)) continue;
   deny(input, `RuleDoctor: ${r.message}`);
 }
 

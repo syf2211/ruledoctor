@@ -2,8 +2,8 @@
 /**
  * Re-inject project rules after SessionStart / PreCompact (compaction).
  */
-import { readFileSync, existsSync, readdirSync } from "node:fs";
-import { resolve, join } from "node:path";
+import { readFileSync, existsSync, readdirSync, realpathSync } from "node:fs";
+import { resolve, join, relative, isAbsolute } from "node:path";
 
 const ROOT_RULES = [
   "CLAUDE.md",
@@ -39,23 +39,46 @@ function loadRequiredReads(cwd) {
   return [];
 }
 
+function realpathOrResolve(path) {
+  try {
+    return realpathSync.native(path);
+  } catch {
+    return resolve(path);
+  }
+}
+
+function isInsideDir(parent, child) {
+  const rel = relative(parent, child);
+  return rel === "" || (!!rel && !rel.startsWith("..") && !isAbsolute(rel));
+}
+
+function addSafePath(paths, realCwd, candidate) {
+  if (!existsSync(candidate)) return;
+  const real = realpathOrResolve(candidate);
+  if (isInsideDir(realCwd, real)) paths.add(real);
+}
+
 function discoverRulePaths(cwd) {
   const paths = new Set();
+  const root = resolve(cwd);
+  const realRoot = realpathOrResolve(root);
   for (const rel of ROOT_RULES) {
-    const p = resolve(cwd, rel);
-    if (existsSync(p)) paths.add(p);
+    addSafePath(paths, realRoot, resolve(root, rel));
   }
-  const cursorDir = resolve(cwd, ".cursor/rules");
+  const cursorDir = resolve(root, ".cursor/rules");
   if (existsSync(cursorDir)) {
     for (const f of readdirSync(cursorDir)) {
-      if (f.endsWith(".md") || f.endsWith(".mdc")) paths.add(join(cursorDir, f));
+      if (f.endsWith(".md") || f.endsWith(".mdc")) addSafePath(paths, realRoot, join(cursorDir, f));
     }
   }
   for (const rel of loadRequiredReads(cwd)) {
-    const p = resolve(cwd, rel);
-    if (existsSync(p)) paths.add(p);
+    const trimmed = rel.trim();
+    if (!trimmed || trimmed.includes("\0") || isAbsolute(trimmed)) continue;
+    const p = resolve(root, trimmed);
+    if (!isInsideDir(root, p)) continue;
+    addSafePath(paths, realRoot, p);
   }
-  return [...paths];
+  return [...paths].sort();
 }
 
 function buildContext(cwd) {

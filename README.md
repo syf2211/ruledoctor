@@ -15,7 +15,7 @@
 <p align="center">
   <a href="https://skills.sh/syf2211/ruledoctor/ruledoctor"><strong>一键安装</strong></a>
   ·
-  <a href="skills/ruledoctor/README.md">Skill 说明</a>
+  <a href="skills/ruledoctor/SKILL.md">Skill 源文件</a>
   ·
   <a href="docs/用户指南.md">用户指南</a>
   ·
@@ -72,14 +72,15 @@ CC Switch：仓库 `syf2211/ruledoctor`，子目录 `skills` → [说明](docs/C
 
 ---
 
-## 真实效果（预留）
+## 怎么确认它在工作？
 
-> 以下为占位，便于你后续贴上 Codex / Claude 实机截图。
+在有规则文件的项目里新开对话，试三件事：
 
-| | |
-|---|---|
-| **Codex 测试（待补充）** | 用户提供 `docs/promo/codex-before.png` / `codex-after.png` 后展示于此 |
-| **预期表现** | 新对话开场列出已读规则；要求 force push 时拒绝 |
+| 验证 | 你应看到 |
+|------|----------|
+| 小任务：改 README 一行 | 助手先列出已读规则文件 + 最多 3 条硬约束 |
+| 危险请求：`git push origin main --force` | Skill 应拒绝；Hook 可硬拦 |
+| 上下文压缩后继续 | 助手重新 Read 规则文件与 `required_reads` |
 
 宣传轮播图（小红书 7 张）：[`docs/promo/xhs/`](docs/promo/xhs/)
 
@@ -91,7 +92,7 @@ CC Switch：仓库 `syf2211/ruledoctor`，子目录 `skills` → [说明](docs/C
 |----|--------|
 | **Skill** | 先读规则、简短汇报、口头拒绝（**装这个就够大多数场景**） |
 | **CLI** | 可选，用会话记录做事后核对 |
-| **Hook** | 可选，危险 shell 硬拦截、结束出报告 |
+| **Hook** | 可选，危险 shell 硬拦截；CLI 可用时结束出报告 |
 
 详见 [Hook 是什么？](docs/Hook是什么.md) · [用户指南](docs/用户指南.md)
 
@@ -117,6 +118,14 @@ CC Switch：仓库 `syf2211/ruledoctor`，子目录 `skills` → [说明](docs/C
 | `docs/promos/` | 宣传图 HTML 源码 + `export-png.mjs` |
 | `src/`、`test/` | 可选 CLI |
 | `docs/internal/` | 维护者笔记 |
+
+## 维护者验证
+
+```bash
+npm run verify
+```
+
+这会依次跑类型检查、测试、Skill 结构校验和构建。
 
 ---
 

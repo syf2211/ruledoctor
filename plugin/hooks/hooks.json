@@ -1,5 +1,5 @@
 {
-  "description": "RuleDoctor — rule reinjection on compaction + command guard + session report",
+  "description": "RuleDoctor — rule reinjection on compaction + command guard; session report when the CLI is available",
   "hooks": {
     "SessionStart": [
       {

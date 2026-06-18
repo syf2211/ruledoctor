@@ -35,9 +35,9 @@ node docs/promos/export-png.mjs
 - `docs/promo/小红书自动发布方案.md` — MCP 与自动化调研  
 - `POST.md` — 短帖索引（指向上文）
 
-## Codex 实机图（预留）
+## 可选 Codex 实机图
 
-放入后更新 README 并可选改 `slide-07-cta.html` 占位区，再 export：
+有真实对话截图后，可放入以下路径并重新 export：
 
 - `docs/promo/codex-before.png`
 - `docs/promo/codex-after.png`

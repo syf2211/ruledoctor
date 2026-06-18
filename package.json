@@ -1,7 +1,7 @@
 {
   "name": "ruledoctor",
   "version": "0.1.0",
-  "description": "Coverage for your AI coding rules — measure whether .cursorrules / CLAUDE.md / AGENTS.md were actually read and followed by the model. 规则体检。",
+  "description": "Agent Skill and optional CLI/Hook to make coding agents read project rules before editing. 规则优先。",
   "type": "module",
   "license": "MIT",
   "author": "",
@@ -43,6 +43,8 @@
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "validate:skill": "node scripts/validate-skill.mjs",
+    "verify": "npm run typecheck && npm test && npm run validate:skill && npm run build",
     "test": "node --import tsx --test test/*.test.ts",
     "demo": "npm run build && node dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl",
     "demo:html": "npm run build && node dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl --format html --out docs/demo-report.html",

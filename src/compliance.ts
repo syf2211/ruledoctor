@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve, isAbsolute } from "node:path";
 import fg from "fast-glob";
 import type { Check, ComplianceResult, Config, Rule } from "./types.js";
+import { matchesForbiddenCommand } from "./commandMatcher.js";
 
 export const CONFIG_FILES = [".ruledoctor.json", ".ruledoctor.jsonc", "ruledoctor.config.json"];
 
@@ -126,8 +127,7 @@ function evalCommand(check: Check, ruleId: string, corpusText: string): Complian
   if (!check.command) {
     return { ruleId, status: "unknown", detail: "checker missing `command`", checkType: check.type };
   }
-  // treat command as a substring of the transcript (lowercased)
-  const found = corpusText.includes(check.command.toLowerCase());
+  const found = matchesForbiddenCommand(corpusText, check.command);
   const detail = check.message?.trim();
   return found
     ? { ruleId, status: "fail", detail: detail ?? `forbidden command "${check.command}" was run in the session`, checkType: check.type }

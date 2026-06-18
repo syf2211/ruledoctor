@@ -37,18 +37,31 @@ function resolveCli(cwd) {
   const bin = (which.stdout || "").trim();
   if (bin) return { exe: bin, argsPrefix: [] };
 
-  return { exe: "npx", argsPrefix: ["--yes", "ruledoctor@0.1.0"] };
+  return null;
 }
 
 const input = readStdin();
 const cwd = input.cwd || input.project_dir || process.env.CLAUDE_PROJECT_DIR || process.cwd();
 const session = input.transcript_path;
 
-const { exe, argsPrefix } = resolveCli(cwd);
 const outDir = join(cwd, ".ruledoctor");
 mkdirSync(outDir, { recursive: true });
 const htmlOut = join(outDir, "last-report.html");
 const sessionArgs = session && existsSync(session) ? ["--session", session] : ["--last-session"];
+const resolved = resolveCli(cwd);
+
+if (!resolved) {
+  console.log(
+    JSON.stringify({
+      continue: true,
+      systemMessage:
+        "RuleDoctor SessionEnd: 未找到可运行的 ruledoctor CLI，已跳过报告生成。Skill 本身仍可工作；如需自动报告，请 clone 仓库后 npm install && npm run build，并运行 node dist/index.js setup -p <项目>。",
+    }),
+  );
+  process.exit(0);
+}
+
+const { exe, argsPrefix } = resolved;
 const baseArgs = [...argsPrefix, "--cwd", cwd, ...sessionArgs];
 
 const run = spawnSync(exe, [...baseArgs, "--format", "html", "--out", htmlOut], {

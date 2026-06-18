@@ -1,0 +1,6 @@
+interface:
+  display_name: "RuleDoctor"
+  short_description: "Read project rules before coding"
+  default_prompt: "Use $ruledoctor to read this project's rule files and required_reads before making changes."
+policy:
+  allow_implicit_invocation: true

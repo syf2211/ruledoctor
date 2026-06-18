@@ -1,8 +1,9 @@
 ---
 name: ruledoctor
 description: >-
-  Use when the project has rule files (CLAUDE.md, .cursorrules, CONTRIBUTING.md, .cursor/rules) or
-  .ruledoctor.json required_reads; before git push or deploy; when context was compacted.
+  Use when the project has rule files (CLAUDE.md, AGENTS.md, .cursorrules, CONTRIBUTING.md,
+  .github/copilot-instructions.md, .cursor/rules) or .ruledoctor.json required_reads;
+  before git push, deploy, bulk delete, or when context was compacted.
   Read listed rules and required_reads first; refuse violations; re-read after long sessions.
   Default user message: files read + 3 hard constraints only unless user asks for full summary.
 ---
@@ -15,9 +16,9 @@ description: >-
 |----|------|
 | **本 Skill** | 提醒你先读规则、拒绝违禁操作、压缩后重读（**软约束**） |
 | **CLI `ruledoctor`** | 用户要求时，用本地会话日志做**事后核对** |
-| **Hook（`ruledoctor setup`）** | 在 **Bash 执行前**硬拦截部分命令；SessionStart/压缩后注入规则摘要；结束可出报告（见下） |
+| **Hook（`ruledoctor setup`）** | 在 **Bash 执行前**硬拦截部分命令；SessionStart/压缩后注入规则摘要；CLI 可用时结束出报告 |
 
-读规则 ≠ 一定遵守。**「必须用中文、要汇报、要写验证」** 靠本 Skill + 项目规则（软约束）；**只有能写成 shell 子串的危险命令** 才适合 Hook 硬拦。人话说明：[Hook 是什么？](https://github.com/syf2211/ruledoctor/blob/main/docs/Hook是什么.md)
+读规则 ≠ 一定遵守。**「必须用中文、要汇报、要写验证」** 靠本 Skill + 项目规则（软约束）；**只有能写成明确 shell 命令规则的危险操作** 才适合 Hook 硬拦。人话说明：[Hook 是什么？](https://github.com/syf2211/ruledoctor/blob/main/docs/Hook是什么.md)
 
 ---
 
@@ -36,7 +37,7 @@ description: >-
    ```json
    "required_reads": ["docs/agent_workflow_protocol.md", "README.md"]
    ```
-   `README.md` 只有写进清单才强制 Read，不会默认扫全库。
+   `README.md` 只有写进清单才强制 Read，不会默认扫全库。忽略绝对路径、`..` 逃逸和指向项目外的 symlink。
 
 ---
 
@@ -58,7 +59,7 @@ description: >-
 ### 3. 动手前
 
 - 将违反硬约束的命令 → **不执行**，说明**哪一条**、**建议替代**。
-- 默认拒绝：`git push --force`、`git push -f`、`rm -rf /`、提交密钥。
+- 默认拒绝：`git push` 搭配 `--force` / `-f` / `--force-with-lease`、`rm -rf /`、提交密钥。
 
 ### 4. 长对话 / 压缩后
 
@@ -69,6 +70,8 @@ description: >-
 ```bash
 ruledoctor --cwd "<项目根>" --last-session
 ```
+
+若本机没有 `ruledoctor` CLI，不要直接 `npx ruledoctor`；说明 CLI/Hook 是可选增强，并让用户按仓库文档 clone、build 后再运行报告。
 
 ---
 

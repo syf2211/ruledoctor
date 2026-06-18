@@ -2,7 +2,7 @@
 
 ## 硬性规则
 
-- 禁止执行 `git push --force` 或 `git push -f`。
+- 禁止执行 `git push --force`、`git push -f` 或 `git push --force-with-lease`。
 - 修改代码前先阅读相关文件，不要猜测未读过的 API。
 - 提交前运行项目约定的测试或 lint（若有）。
 - 不要提交密钥、token、.env 到仓库。
