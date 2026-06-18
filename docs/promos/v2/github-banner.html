@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>RuleDoctor — GitHub Banner</title>
+  <link rel="stylesheet" href="tokens.css" />
+</head>
+<body>
+  <div class="frame frame--banner">
+    <div class="mesh"></div>
+    <div class="grid-bg"></div>
+    <div class="row-banner">
+      <div class="col">
+        <div class="badge"><span class="dot"></span>开源 Agent Skill</div>
+        <div class="logo-row mt">
+          <div class="logo-mark">R</div>
+          <div>
+            <div class="logo-name">RuleDoctor</div>
+            <div class="logo-sub">让 AI 先读你的项目规则，再改代码</div>
+          </div>
+        </div>
+        <h1 class="h1 h1--banner mt-lg">写了 CLAUDE.md，<br>助手还是<span class="hl">乱改乱推？</span></h1>
+        <p class="lead mt">装一个 Skill，新开对话就会先读规则文件，并告诉你本场要守的几条硬规矩。可选检测：规则有没有真被遵守。</p>
+        <div class="tools">
+          <span>Claude Code</span><span>Codex</span><span>Cursor</span><span>OpenCode</span>
+        </div>
+        <div class="cmd">npx skills add syf2211/ruledoctor@ruledoctor -g -y</div>
+      </div>
+      <div class="col col--right">
+        <div class="chat-card">
+          <div class="chat-head"><span>你的项目 · 新对话</span><span style="color:var(--mint)">● 规则已加载</span></div>
+          <div class="chat-body">
+            <div class="bubble bubble--user">帮我把登录接口改一下</div>
+            <div class="bubble bubble--agent">
+              <strong>我先读了项目规则：</strong> CLAUDE.md、.cursor/rules/api.md
+              <ul class="checklist">
+                <li>不改对外 API 签名</li>
+                <li>提交前跑测试</li>
+                <li>禁止 force push</li>
+              </ul>
+              确认后我开始改代码。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

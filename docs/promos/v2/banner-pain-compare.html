@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>RuleDoctor — 痛点对比</title>
+  <link rel="stylesheet" href="tokens.css" />
+  <style>
+    .frame--og { width: 1600px; height: 640px; }
+    .compare { margin-top: 20px; }
+    .compare-col li { font-size: 18px; }
+    .compare-col h4 { font-size: 22px; }
+  </style>
+</head>
+<body>
+  <div class="frame frame--og">
+    <div class="mesh"></div>
+    <div class="row-banner">
+      <div class="col" style="grid-column: 1 / -1; padding: 44px 64px;">
+        <div class="badge"><span class="dot"></span>Before / After</div>
+        <h1 class="h1 h1--banner mt" style="font-size:40px;">规则写了，不等于<span class="hl">助手真遵守</span></h1>
+        <div class="compare">
+          <div class="compare-col compare-col--bad">
+            <h4>没有 RuleDoctor</h4>
+            <ul>
+              <li>直接改代码，像没看过 CLAUDE.md</li>
+              <li>说「已按规范完成」，实际没跑测试</li>
+              <li>聊久了忘记项目禁忌</li>
+              <li>你不知道规则有没有生效</li>
+            </ul>
+          </div>
+          <div class="compare-col compare-col--good">
+            <h4>装上 Skill 之后</h4>
+            <ul>
+              <li>开场先读规则 + 3 条硬约束</li>
+              <li>必读文档可配置 required_reads</li>
+              <li>可选报告：读没读、做没做</li>
+              <li>危险 push 可拦截（Hook 可选）</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

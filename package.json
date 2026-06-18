@@ -46,6 +46,7 @@
     "test": "node --import tsx --test test/*.test.ts",
     "demo": "npm run build && node dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl",
     "demo:html": "npm run build && node dist/index.js --cwd examples/demo-project --session examples/demo-project/session.jsonl --format html --out docs/demo-report.html",
+    "export:promo": "node docs/promos/export-png.mjs",
     "demo:video": "node docs/record-demo-video.mjs && python3 -c \"import imageio_ffmpeg,subprocess,sys; ff=imageio_ffmpeg.get_ffmpeg_exe(); subprocess.check_call([ff,'-y','-i','docs/demo-walkthrough.webm','-c:v','libx264','-pix_fmt','yuv420p','-movflags','+faststart','docs/demo-walkthrough.mp4'])\"",
     "setup:here": "npm run build && node dist/index.js setup -p .",
     "sync:skill": "mkdir -p plugin/scripts plugin/skills/ruledoctor && cp scripts/*.mjs plugin/scripts/ && cp skills/ruledoctor/SKILL.md plugin/skills/ruledoctor/",
