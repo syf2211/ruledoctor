@@ -28,6 +28,10 @@ GitHub traffic 近 14 天：
 - 推荐安装命令改为 agent-specific，避免 `npx skills add ... -g -y` 的部分失败提示。
 - CI 加入真实 `npx skills@1.5.11` 安装 smoke。
 - GitHub Issues 新增三个公开入口：[#1 截图/GIF](https://github.com/syf2211/ruledoctor/issues/1)、[#2 npm/CLI](https://github.com/syf2211/ruledoctor/issues/2)、[#3 真实规则失效案例](https://github.com/syf2211/ruledoctor/issues/3)。
+- 新增外部目录 PR：heilcheng/awesome-agent-skills [#302](https://github.com/heilcheng/awesome-agent-skills/pull/302)、libukai/awesome-agent-skills [#85](https://github.com/libukai/awesome-agent-skills/pull/85)。
+- 复查已有外部入口：helloianneo [#41](https://github.com/helloianneo/awesome-claude-code-skills/pull/41)、Composio Codex [#116](https://github.com/ComposioHQ/awesome-codex-skills/pull/116)、Composio Claude [#1101](https://github.com/ComposioHQ/awesome-claude-skills/pull/1101)、CC Switch [#4384](https://github.com/farion1231/cc-switch/issues/4384) 均仍 open。
+- 暂缓不合规/不合适目标：JackyST0/awesome-agent-skills 要求社区项目默认 64+ stars；hesreallyhim/awesome-claude-code 当前 README 重构中，无可插入目录；VoltAgent/awesome-agent-skills 要求真实社区使用量。
+- 小红书 Chrome 自动发布当前卡点：Chrome 已运行、native host 正常，但当前 Chrome profile 未安装 Codex Chrome Extension；安装启用扩展后可继续上传 `docs/promo/xhs/slide-*.png` 并填写首发稿。
 
 ## 接下来 7 天
 
