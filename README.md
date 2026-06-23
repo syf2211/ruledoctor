@@ -111,6 +111,12 @@ CC Switch：仓库 `syf2211/ruledoctor`，子目录 `skills` → [说明](docs/C
 | 上下文被压缩 | 重新 Read 并简短汇报 |
 | 要求 force push | 拒绝（硬拦需 Hook） |
 
+## 参与反馈
+
+- 真实规则失效案例：[#3](https://github.com/syf2211/ruledoctor/issues/3)
+- 真实截图 / Demo GIF 征集：[#1](https://github.com/syf2211/ruledoctor/issues/1)
+- 可选 CLI 发布计划：[#2](https://github.com/syf2211/ruledoctor/issues/2)
+
 ---
 
 ## 仓库里其它目录（Skill 用户可忽略）

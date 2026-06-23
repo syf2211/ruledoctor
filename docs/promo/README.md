@@ -32,6 +32,8 @@ node docs/promos/export-png.mjs
 
 - `docs/promo/copy/平台文案.md` — 小红书 / 知乎 / X / 社区帖  
 - `docs/promo/copy/小红书首发稿.md` — 首发标题、正文、置顶评论、话题与配图顺序
+- `docs/promo/copy/小红书连续发布稿.md` — 连续 1-2 周发布的痛点/教程/案例征集稿
+- `docs/promo/growth-diagnosis-2026-06-23.md` — 当前流量诊断、7 天动作、指标复查命令
 - `docs/promo/小红书自动发布方案.md` — MCP 与自动化调研  
 - `POST.md` — 短帖索引（指向上文）
 
